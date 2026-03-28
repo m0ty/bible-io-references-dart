@@ -1,0 +1,20 @@
+name: bible_io_references
+description: Parse Bible verse references into structured Dart objects with support for multiple languages and flexible formatting.
+version: 1.0.0
+homepage: https://github.com/motylf/bible-io-references-dart
+repository: https://github.com/motylf/bible-io-references-dart
+issue_tracker: https://github.com/motylf/bible-io-references-dart/issues
+documentation: https://github.com/motylf/bible-io-references-dart#readme
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+topics:
+  - bible
+  - parsing
+  - references
+  - scripture
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.25.6
