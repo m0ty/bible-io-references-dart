@@ -1,8 +1,10 @@
 import 'bible_book_enum.dart';
 import 'bible_language_enum.dart';
 import 'languages.dart';
+import 'reference_input_normalizer.dart';
 
 part 'src/reference_parser.dart';
+part 'src/passage_parser.dart';
 
 /// A typed classification for reference parsing failures.
 enum ReferenceParseErrorCode {
@@ -492,9 +494,16 @@ class VerseRangeRef extends Reference {
 }
 
 /// Regex patterns for parsing.
-final _verseRefPattern = RegExp(r'^\s*(.+?)\s+(\d+)\s*[:.]\s*(\d+)\s*$');
+final _verseRefPattern = RegExp(r'^\s*(.+?)\s*(\d+)\s*[:.]\s*(\d+)\s*$');
 final _verseRangeRefPattern = RegExp(
-    r'^\s*(.+?)\s+(\d+)\s*[:.]\s*(\d+)\s*[-\u2013\u2014\u2015]\s*(?:(.+?)\s+)?(?:(\d+)\s*[:.]\s*)?(\d+)\s*$');
+  r'^\s*(.+?)\s+(\d+)\s*[:.]\s*(\d+)\s*[-\u2013\u2014\u2015]\s*(?:(.+?)\s+)?(?:(\d+)\s*[:.]\s*)?(\d+)\s*$',
+);
+final _flexibleVerseRangeRefPattern = RegExp(
+  r'^\s*(.+?)\s*(\d+)\s*[:.]\s*(\d+)\s*[-\u2013\u2014\u2015]\s*(.+?)\s*$',
+);
+final _sameChapterRangeEndPattern = RegExp(r'^(\d+)$');
+final _crossChapterRangeEndPattern = RegExp(r'^(\d+)\s*[:.]\s*(\d+)$');
+final _crossBookRangeEndPattern = RegExp(r'^(.+?)\s*(\d+)\s*[:.]\s*(\d+)$');
 
 /// Book term lookup helper.
 class _BookTermLookup {

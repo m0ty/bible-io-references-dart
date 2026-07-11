@@ -9,8 +9,20 @@
 - Localized long/short reference formatting and supported-language introspection
 - Configurable `ReferenceParser` aliases, language priority, and ambiguity rejection
 - Detected-language, selected-book, custom-alias, and alternate-match metadata
+- Immutable `Passage` values and `PassageParser` support for whole books,
+  chapters, chapter ranges, verse lists, semicolon-separated sequences, and
+  configurable single-chapter shorthand
+- Localized passage formatting plus OSIS and USFM serialization for every
+  passage variant
+- Reference-oriented Unicode normalization for compatibility punctuation,
+  fullwidth forms, Arabic-Indic digits, combining/vocalization marks, RTL
+  controls, Unicode spacing, and CJK book/chapter adjacency
+- UTF-16 source-span mapping through `ReferenceInputNormalization`
+- Parser-driven `ReferenceExtractor` matches with exact original offsets,
+  one-pass replacement, generic linkification, and escaped Markdown links
 - Complete OSIS and USFM book/reference identifiers with reverse parsing
-- Published CLI executable with language/text/JSON/OSIS/USFM output and a package example
+- Published CLI executable with rich-passage language/text/JSON/OSIS/USFM
+  output and a package example
 - UTF-8 CLI batch processing from stdin or files with JSON Lines and exit codes
 - Linux and Windows CI for formatting, analysis, and the full test suite
 

@@ -225,6 +225,86 @@ extension ReferenceMachineIdentifiers on Reference {
       };
 }
 
+/// Adds canonical OSIS and USFM serialization to passage expressions.
+extension PassageMachineIdentifiers on Passage {
+  /// Encodes this passage using OSIS book and coordinate identifiers.
+  ///
+  /// Verse selections retain their complete [Reference.osisIdentifier]
+  /// values. Multiple OSIS values are conventionally separated by spaces.
+  String get osisIdentifier => switch (this) {
+        BookPassage passage => passage.book.osisIdentifier,
+        ChapterPassage passage => _chapterPassageToOsis(passage),
+        VersePassage passage => passage.selections
+            .map((selection) => selection.osisIdentifier)
+            .join(' '),
+        PassageSequence passage => passage.passages
+            .map((selection) => selection.osisIdentifier)
+            .join(' '),
+      };
+
+  /// Encodes this passage using USFM book and coordinate identifiers.
+  ///
+  /// Same-book, same-chapter verse selections use compact comma notation,
+  /// such as `JHN 3:16,18-20`. A selection whose book or chapter changes
+  /// retains its complete [Reference.usfmIdentifier]. Passage sequences are
+  /// separated by `; `.
+  String get usfmIdentifier => switch (this) {
+        BookPassage passage => passage.book.usfmIdentifier,
+        ChapterPassage passage => _chapterPassageToUsfm(passage),
+        VersePassage passage => _versePassageToUsfm(passage),
+        PassageSequence passage => passage.passages
+            .map((selection) => selection.usfmIdentifier)
+            .join('; '),
+      };
+}
+
+String _chapterPassageToOsis(ChapterPassage passage) {
+  final book = passage.book.osisIdentifier;
+  final start = '$book.${passage.startChapter}';
+  final end = passage.endChapter;
+  return end == null ? start : '$start-$book.$end';
+}
+
+String _chapterPassageToUsfm(ChapterPassage passage) {
+  final start = '${passage.book.usfmIdentifier} ${passage.startChapter}';
+  final end = passage.endChapter;
+  return end == null ? start : '$start-$end';
+}
+
+String _versePassageToUsfm(VersePassage passage) {
+  final first = passage.selections.first;
+  if (passage.selections.length == 1) return first.usfmIdentifier;
+
+  final anchor = _identifierReferenceStart(first);
+  final buffer = StringBuffer(first.usfmIdentifier);
+  for (final selection in passage.selections.skip(1)) {
+    buffer
+      ..write(',')
+      ..write(_compactUsfmSelection(selection, anchor));
+  }
+  return buffer.toString();
+}
+
+String _compactUsfmSelection(Reference selection, VerseRef anchor) {
+  return switch (selection) {
+    VerseRef verse
+        when verse.book == anchor.book && verse.chapter == anchor.chapter =>
+      '${verse.verse}',
+    VerseRangeRef range
+        when range.start.book == anchor.book &&
+            range.end.book == anchor.book &&
+            range.start.chapter == anchor.chapter &&
+            range.end.chapter == anchor.chapter =>
+      '${range.start.verse}-${range.end.verse}',
+    _ => selection.usfmIdentifier,
+  };
+}
+
+VerseRef _identifierReferenceStart(Reference reference) => switch (reference) {
+      VerseRef() => reference,
+      VerseRangeRef() => reference.start,
+    };
+
 String _verseToOsis(VerseRef verse) =>
     '${verse.book.osisIdentifier}.${verse.chapter}.${verse.verse}';
 

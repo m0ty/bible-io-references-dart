@@ -40,7 +40,12 @@ This document describes the comprehensive test suite for the `bible_io_reference
 - `reference_formatter_test.dart`: Localized formatting and language support metadata
 - `configurable_parser_test.dart`: Custom aliases, ambiguity policies, and detection metadata
 - `reference_identifier_interop_test.dart`: OSIS/USFM mappings and round trips
-- `cli_batch_test.dart`: Batch sources, JSON Lines, diagnostics, and exit codes
+- `passage_grammar_test.dart`: Rich passage values, grammar, metadata, and Unicode syntax
+- `passage_formatter_test.dart`: Localized book/chapter/list/sequence output
+- `passage_identifier_test.dart`: Passage-level OSIS and USFM serialization
+- `reference_input_normalizer_test.dart`: Unicode transformations and UTF-16 source mapping
+- `reference_extractor_test.dart`: Prose extraction, replacement, and linkification
+- `cli_batch_test.dart`: Rich single/batch input, JSON Lines, formats, diagnostics, and exit codes
 
 ## Running Tests
 

@@ -163,11 +163,11 @@ int _runSingle(
   required StringSink errors,
 }) {
   try {
-    final reference = Reference.parse(input, language: language);
+    final parsed = _parseInput(input, language: language);
     if (outputFormat == 'json') {
-      output.writeln(jsonEncode(reference.toJson()));
+      output.writeln(jsonEncode(_parsedToJson(parsed)));
     } else {
-      output.writeln(_renderReference(reference, outputFormat, language));
+      output.writeln(_renderParsed(parsed, outputFormat, language));
     }
     return _successExitCode;
   } on ParseVerseRefError catch (error) {
@@ -207,18 +207,21 @@ Future<int> _runBatch(
     if (input.isEmpty) continue;
 
     try {
-      final reference = Reference.parse(input, language: language);
+      final parsed = _parseInput(input, language: language);
       if (outputFormat == 'json') {
         output.writeln(
           jsonEncode({
             'line': lineNumber,
             'input': input,
             'ok': true,
-            'reference': reference.toJson(),
+            if (parsed is Reference)
+              'reference': parsed.toJson()
+            else
+              'passage': (parsed as Passage).toJson(),
           }),
         );
       } else {
-        output.writeln(_renderReference(reference, outputFormat, language));
+        output.writeln(_renderParsed(parsed, outputFormat, language));
       }
     } on ParseVerseRefError catch (error) {
       hadFailure = true;
@@ -248,17 +251,52 @@ Future<int> _runBatch(
   return hadFailure ? _dataErrorExitCode : _successExitCode;
 }
 
-String _renderReference(
-  Reference reference,
+Object _parseInput(
+  String input, {
+  required BibleLanguageEnum? language,
+}) {
+  final reference = Reference.parseResult(input, language: language);
+  if (reference.valueOrNull case final value?) return value;
+  return Passage.parse(input, language: language);
+}
+
+Map<String, Object?> _parsedToJson(Object parsed) => switch (parsed) {
+      Reference reference => reference.toJson(),
+      Passage passage => passage.toJson(),
+      _ => throw StateError('unsupported parsed value: ${parsed.runtimeType}'),
+    };
+
+String _renderParsed(
+  Object parsed,
   String outputFormat,
   BibleLanguageEnum? language,
 ) =>
     switch (outputFormat) {
-      'text' => reference.format(
-          language: language ?? BibleLanguageEnum.english,
-        ),
-      'osis' => reference.osisIdentifier,
-      'usfm' => reference.usfmIdentifier,
+      'text' => switch (parsed) {
+          Reference reference => reference.format(
+              language: language ?? BibleLanguageEnum.english,
+            ),
+          Passage passage => passage.format(
+              language: language ?? BibleLanguageEnum.english,
+            ),
+          _ => throw StateError(
+              'unsupported parsed value: ${parsed.runtimeType}',
+            ),
+        },
+      'osis' => switch (parsed) {
+          Reference reference => reference.osisIdentifier,
+          Passage passage => passage.osisIdentifier,
+          _ => throw StateError(
+              'unsupported parsed value: ${parsed.runtimeType}',
+            ),
+        },
+      'usfm' => switch (parsed) {
+          Reference reference => reference.usfmIdentifier,
+          Passage passage => passage.usfmIdentifier,
+          _ => throw StateError(
+              'unsupported parsed value: ${parsed.runtimeType}',
+            ),
+        },
       _ => throw StateError('unsupported rendered format: $outputFormat'),
     };
 
@@ -305,7 +343,7 @@ void _printUsage(StringSink sink) {
     '--input FILE',
   );
   sink.writeln();
-  sink.writeln('Batch input is UTF-8 with one reference per nonblank line.');
+  sink.writeln('Batch input is UTF-8 with one passage per nonblank line.');
   sink.writeln('JSON batch output is JSON Lines, including per-line errors.');
   sink.writeln(
       'Exit codes: 0 success, 64 usage, 65 parse failure, 66 input error.');

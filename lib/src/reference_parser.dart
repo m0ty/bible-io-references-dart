@@ -58,7 +58,7 @@ final class ReferenceBookTokenMatch {
     Iterable<ReferenceBookCandidate> alternatives = const [],
   }) : alternatives = List.unmodifiable(alternatives);
 
-  /// The original book token, trimmed but otherwise unchanged.
+  /// The syntax-normalized book token, trimmed but otherwise unchanged.
   final String input;
 
   /// The candidate chosen by the parser.
@@ -81,6 +81,18 @@ final class ReferenceBookTokenMatch {
           for (final candidate in alternatives) candidate.toJson(),
         ],
       };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ReferenceBookTokenMatch &&
+          input == other.input &&
+          selected == other.selected &&
+          _referenceListsEqual(alternatives, other.alternatives);
+
+  @override
+  int get hashCode =>
+      Object.hash(input, selected, Object.hashAll(alternatives));
 }
 
 /// Metadata captured while a reference is parsed successfully.
@@ -101,7 +113,7 @@ final class ReferenceParseMetadata {
     bookMatches: <ReferenceBookTokenMatch>[],
   );
 
-  /// The trimmed, whitespace-normalized source text.
+  /// The Unicode-syntax-normalized, trimmed, whitespace-normalized source.
   final String normalizedInput;
 
   /// Matches for each explicit book token in source order.
@@ -136,6 +148,16 @@ final class ReferenceParseMetadata {
         ],
         'bookMatches': [for (final match in bookMatches) match.toJson()],
       };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ReferenceParseMetadata &&
+          normalizedInput == other.normalizedInput &&
+          _referenceListsEqual(bookMatches, other.bookMatches);
+
+  @override
+  int get hashCode => Object.hash(normalizedInput, Object.hashAll(bookMatches));
 }
 
 /// A configurable, reusable Bible-reference parser.
@@ -264,8 +286,9 @@ final class ReferenceParser {
     String ref, {
     BibleLanguageEnum? language,
   }) {
-    _ensureReferenceIsNotEmpty(ref);
-    if (_verseRangeRefPattern.hasMatch(ref)) {
+    final normalizedRef = ReferenceInputNormalizer.normalize(ref);
+    _ensureReferenceIsNotEmpty(normalizedRef);
+    if (_flexibleVerseRangeRefPattern.hasMatch(normalizedRef)) {
       final parsed = _parseRange(ref, language: language);
       return _ParsedReference(parsed.value, parsed.metadata);
     }
@@ -277,9 +300,10 @@ final class ReferenceParser {
     String ref, {
     BibleLanguageEnum? language,
   }) {
-    _ensureReferenceIsNotEmpty(ref);
+    final normalizedRef = ReferenceInputNormalizer.normalize(ref);
+    _ensureReferenceIsNotEmpty(normalizedRef);
     _validateLanguage(language);
-    final match = _verseRefPattern.firstMatch(ref);
+    final match = _verseRefPattern.firstMatch(normalizedRef);
     if (match == null) {
       throw ParseVerseRefError.typed(
         code: ReferenceParseErrorCode.patternMismatch,
@@ -305,7 +329,7 @@ final class ReferenceParser {
     );
     return _ParsedReference(
       value,
-      _metadata(ref, [resolution.match]),
+      _metadata(normalizedRef, [resolution.match]),
     );
   }
 
@@ -313,9 +337,10 @@ final class ReferenceParser {
     String ref, {
     BibleLanguageEnum? language,
   }) {
-    _ensureReferenceIsNotEmpty(ref);
+    final normalizedRef = ReferenceInputNormalizer.normalize(ref);
+    _ensureReferenceIsNotEmpty(normalizedRef);
     _validateLanguage(language);
-    final match = _verseRangeRefPattern.firstMatch(ref);
+    final match = _flexibleVerseRangeRefPattern.firstMatch(normalizedRef);
     if (match == null) {
       throw ParseVerseRefError.typed(
         code: ReferenceParseErrorCode.patternMismatch,
@@ -333,31 +358,51 @@ final class ReferenceParser {
       component: 'start verse',
       maximum: maxReferenceVerseNumber,
     );
+    final startResolution = _resolveBook(match.group(1)!, language: language);
+    final matches = <ReferenceBookTokenMatch>[startResolution.match];
+    final endExpression = match.group(4)!.trim();
+    final sameChapterEnd =
+        _sameChapterRangeEndPattern.firstMatch(endExpression);
+    final crossChapterEnd =
+        _crossChapterRangeEndPattern.firstMatch(endExpression);
+    final crossBookEnd = _crossBookRangeEndPattern.firstMatch(endExpression);
+    final BibleBookEnum endBook;
+    final int endChapter;
+    final String endVerseToken;
+    if (sameChapterEnd != null) {
+      endBook = startResolution.match.selected.book;
+      endChapter = startChapter;
+      endVerseToken = sameChapterEnd.group(1)!;
+    } else if (crossChapterEnd != null) {
+      endBook = startResolution.match.selected.book;
+      endChapter = _parseReferenceNumber(
+        crossChapterEnd.group(1)!,
+        component: 'end chapter',
+        maximum: maxReferenceChapterNumber,
+      );
+      endVerseToken = crossChapterEnd.group(2)!;
+    } else if (crossBookEnd != null) {
+      final endResolution =
+          _resolveBook(crossBookEnd.group(1)!, language: language);
+      endBook = endResolution.match.selected.book;
+      matches.add(endResolution.match);
+      endChapter = _parseReferenceNumber(
+        crossBookEnd.group(2)!,
+        component: 'end chapter',
+        maximum: maxReferenceChapterNumber,
+      );
+      endVerseToken = crossBookEnd.group(3)!;
+    } else {
+      throw ParseVerseRefError.typed(
+        code: ReferenceParseErrorCode.patternMismatch,
+        details: 'range end "$endExpression" does not match expected format',
+      );
+    }
     final endVerse = _parseReferenceNumber(
-      match.group(6)!,
+      endVerseToken,
       component: 'end verse',
       maximum: maxReferenceVerseNumber,
     );
-    final endChapterToken = match.group(5);
-    final endChapter = endChapterToken == null
-        ? startChapter
-        : _parseReferenceNumber(
-            endChapterToken,
-            component: 'end chapter',
-            maximum: maxReferenceChapterNumber,
-          );
-
-    final startResolution = _resolveBook(match.group(1)!, language: language);
-    final matches = <ReferenceBookTokenMatch>[startResolution.match];
-    final endBookToken = match.group(4);
-    final BibleBookEnum endBook;
-    if (endBookToken == null) {
-      endBook = startResolution.match.selected.book;
-    } else {
-      final endResolution = _resolveBook(endBookToken, language: language);
-      endBook = endResolution.match.selected.book;
-      matches.add(endResolution.match);
-    }
 
     final start = VerseRef.checked(
       book: startResolution.match.selected.book,
@@ -381,7 +426,7 @@ final class ReferenceParser {
 
     return _ParsedReference(
       VerseRangeRef.checked(start: start, end: end),
-      _metadata(ref, matches),
+      _metadata(normalizedRef, matches),
     );
   }
 
@@ -498,6 +543,15 @@ final class _BookResolution {
   const _BookResolution(this.match);
 
   final ReferenceBookTokenMatch match;
+}
+
+bool _referenceListsEqual<T>(List<T> left, List<T> right) {
+  if (identical(left, right)) return true;
+  if (left.length != right.length) return false;
+  for (var index = 0; index < left.length; index++) {
+    if (left[index] != right[index]) return false;
+  }
+  return true;
 }
 
 final class _ParserBookIndex {
@@ -635,7 +689,9 @@ List<BibleLanguageEnum> _buildLanguagePriority(
 }
 
 String _normalizeParserAlias(String value) =>
-    value.trim().replaceAll(RegExp(r'\s+'), ' ').toLowerCase();
+    ReferenceInputNormalizer.normalize(
+      value,
+    ).trim().replaceAll(RegExp(r'\s+'), ' ').toLowerCase();
 
 Set<String> _parserAliasKeys(String normalized) {
   final withoutPeriods = normalized.replaceAll('.', '');

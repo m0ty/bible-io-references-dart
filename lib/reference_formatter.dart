@@ -44,6 +44,14 @@ final class ReferenceFormatter {
         VerseRangeRef() => _formatRange(reference),
       };
 
+  /// Formats a whole-book, chapter, verse-selection, or sequence [passage].
+  String formatPassage(Passage passage) => switch (passage) {
+        BookPassage() => formatBookName(passage.book),
+        ChapterPassage() => _formatChapterPassage(passage),
+        VersePassage() => _formatVersePassage(passage),
+        PassageSequence() => passage.passages.map(formatPassage).join('; '),
+      };
+
   /// Returns the localized display name for [book].
   String formatBookName(BibleBookEnum book) {
     if (language != BibleLanguageEnum.auto && language.isParsingSupported) {
@@ -91,7 +99,61 @@ final class ReferenceFormatter {
     }
     return '$startText-${end.chapter}:${end.verse}';
   }
+
+  String _formatChapterPassage(ChapterPassage passage) {
+    final start = '${formatBookName(passage.book)} ${passage.startChapter}';
+    final end = passage.endChapter;
+    return end == null ? start : '$start-$end';
+  }
+
+  String _formatVersePassage(VersePassage passage) {
+    if (!compactRanges || passage.selections.length == 1) {
+      return passage.selections.map(format).join(',');
+    }
+
+    final anchor = _referenceStart(passage.selections.first);
+    final buffer = StringBuffer(format(passage.selections.first));
+    for (final selection in passage.selections.skip(1)) {
+      buffer
+        ..write(',')
+        ..write(_formatCompactSelection(selection, anchor));
+    }
+    return buffer.toString();
+  }
+
+  String _formatCompactSelection(Reference selection, VerseRef anchor) =>
+      switch (selection) {
+        VerseRef() => _formatRelativeVerse(selection, anchor),
+        VerseRangeRef() => _formatRelativeRange(selection, anchor),
+      };
+
+  String _formatRelativeVerse(VerseRef verse, VerseRef anchor) {
+    if (verse.book != anchor.book) return _formatVerse(verse);
+    if (verse.chapter == anchor.chapter) return '${verse.verse}';
+    return '${verse.chapter}:${verse.verse}';
+  }
+
+  String _formatRelativeRange(VerseRangeRef range, VerseRef anchor) {
+    final start = range.start;
+    final end = range.end;
+    if (start.book != anchor.book || end.book != anchor.book) {
+      return _formatRange(range);
+    }
+
+    final startText = start.chapter == anchor.chapter
+        ? '${start.verse}'
+        : '${start.chapter}:${start.verse}';
+    final endText = start.chapter == end.chapter
+        ? '${end.verse}'
+        : '${end.chapter}:${end.verse}';
+    return '$startText-$endText';
+  }
 }
+
+VerseRef _referenceStart(Reference reference) => switch (reference) {
+      VerseRef() => reference,
+      VerseRangeRef() => reference.start,
+    };
 
 /// Convenient localized formatting for parsed references.
 extension LocalizedReferenceFormatting on Reference {
@@ -106,5 +168,21 @@ extension LocalizedReferenceFormatting on Reference {
       bookNameStyle: bookNameStyle,
       compactRanges: compactRanges,
     ).format(this);
+  }
+}
+
+/// Convenient localized formatting for whole passage expressions.
+extension LocalizedPassageFormatting on Passage {
+  /// Formats this passage with localized long or short book names.
+  String format({
+    BibleLanguageEnum language = BibleLanguageEnum.english,
+    ReferenceBookNameStyle bookNameStyle = ReferenceBookNameStyle.long,
+    bool compactRanges = true,
+  }) {
+    return ReferenceFormatter(
+      language: language,
+      bookNameStyle: bookNameStyle,
+      compactRanges: compactRanges,
+    ).formatPassage(this);
   }
 }

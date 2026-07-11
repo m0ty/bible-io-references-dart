@@ -212,6 +212,79 @@ void main() {
     expect(usfmCode, 0);
     expect(usfmOutput.toString(), 'JHN 3:16\nACT 2:1-4\n');
   });
+
+  group('rich passage expressions', () {
+    test('renders whole books, chapters, lists, and sequences', () async {
+      final output = StringBuffer();
+
+      final exitCode = await cli.runCli(
+        ['John 3:16,18-20; Acts 2'],
+        standardOutput: output,
+        standardError: StringBuffer(),
+      );
+
+      expect(exitCode, 0);
+      expect(output.toString(), 'John 3:16,18-20; Acts 2\n');
+    });
+
+    test('serializes rich single and batch JSON without changing verse JSON',
+        () async {
+      final singleOutput = StringBuffer();
+      final singleCode = await cli.runCli(
+        ['--format=json', 'John 3'],
+        standardOutput: singleOutput,
+        standardError: StringBuffer(),
+      );
+      final batchOutput = StringBuffer();
+      final batchCode = await cli.runCli(
+        ['--batch', '--format=json'],
+        standardInput: _input('John\nJohn 3:16,18\n'),
+        standardOutput: batchOutput,
+        standardError: StringBuffer(),
+      );
+      final batchRecords = const LineSplitter()
+          .convert(batchOutput.toString())
+          .map((line) => jsonDecode(line) as Map<String, dynamic>)
+          .toList();
+
+      expect(singleCode, 0);
+      expect(jsonDecode(singleOutput.toString()), {
+        'type': 'chapter',
+        'book': 'jo',
+        'startChapter': 3,
+        'endChapter': null,
+      });
+      expect(batchCode, 0);
+      expect(batchRecords[0]['passage'], {
+        'type': 'book',
+        'book': 'jo',
+      });
+      expect(
+        (batchRecords[1]['passage'] as Map<String, dynamic>)['type'],
+        'verses',
+      );
+    });
+
+    test('renders passage OSIS and compact USFM identifiers', () async {
+      final osisOutput = StringBuffer();
+      final osisCode = await cli.runCli(
+        ['--format=osis', 'John 3:16,18-20'],
+        standardOutput: osisOutput,
+        standardError: StringBuffer(),
+      );
+      final usfmOutput = StringBuffer();
+      final usfmCode = await cli.runCli(
+        ['--format=usfm', 'John 3:16,18-20'],
+        standardOutput: usfmOutput,
+        standardError: StringBuffer(),
+      );
+
+      expect(osisCode, 0);
+      expect(osisOutput.toString(), 'John.3.16 John.3.18-John.3.20\n');
+      expect(usfmCode, 0);
+      expect(usfmOutput.toString(), 'JHN 3:16,18-20\n');
+    });
+  });
 }
 
 Stream<List<int>> _input(String value) =>

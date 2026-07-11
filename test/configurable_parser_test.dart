@@ -17,6 +17,17 @@ void main() {
       expect(result.metadataOrNull?.detectedLanguage, isNull);
     });
 
+    test('normalizes custom aliases and adjacent coordinates consistently', () {
+      final parser = ReferenceParser(
+        aliases: {'\uff26\uff41\uff56': BibleBookEnum.john},
+      );
+
+      expect(
+        parser.parse('fav\u0663\uff1a\u0661\u0666'),
+        VerseRef.parse('John 3:16'),
+      );
+    });
+
     test('language-specific aliases respect explicit language selection', () {
       final parser = ReferenceParser(
         aliasesByLanguage: {

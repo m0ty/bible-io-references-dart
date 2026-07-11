@@ -33,4 +33,18 @@ void main() {
 
   print(verse.osisIdentifier); // John.3.16
   print(verse.usfmIdentifier); // JHN 3:16
+
+  final passage = Passage.parse('John 3:16,18-20; Acts 2');
+  print(passage); // John 3:16,18-20; Acts 2
+
+  final normalized = ReferenceInputNormalizer.normalize(
+    'John \u0663\uff1a\u0661\u0666',
+  );
+  print(normalized); // John 3:16
+
+  const prose = 'Study John 3:16 and Acts 2:1-4 today.';
+  final matches = ReferenceExtractor().extract(prose);
+  for (final match in matches) {
+    print('${match.start}-${match.end}: ${match.passage}');
+  }
 }
