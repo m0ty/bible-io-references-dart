@@ -22,4 +22,15 @@ void main() {
 
   final restored = Reference.fromJson(verse.toJson());
   print(restored == verse); // true
+
+  final parser = ReferenceParser(
+    aliases: {'jn': BibleBookEnum.john},
+    ambiguityPolicy: ReferenceAmbiguityPolicy.reject,
+  );
+  final customResult = parser.parseResult('jn 3:16');
+  print(customResult.valueOrNull); // John 3:16
+  print(customResult.metadataOrNull?.alternateMatches.length); // 1 or more
+
+  print(verse.osisIdentifier); // John.3.16
+  print(verse.usfmIdentifier); // JHN 3:16
 }

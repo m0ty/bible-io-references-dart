@@ -79,6 +79,9 @@ LanguageTermAuditReport auditLanguageTerms() {
     _checkForDuplicates(issues, languageCode, 'abbreviations', abbreviations);
   }
 
+  // Names and abbreviations share one runtime lookup per language.
+  _checkCombinedLanguageCollisions(issues);
+
   // Check for whitespace issues
   for (final languageCode in bookNamesByLanguage.keys) {
     final names = bookNamesByLanguage[languageCode]!;
@@ -93,6 +96,56 @@ LanguageTermAuditReport auditLanguageTerms() {
   _checkNormalizationCollisions(issues);
 
   return LanguageTermAuditReport(issues);
+}
+
+void _checkCombinedLanguageCollisions(List<LanguageTermIssue> issues) {
+  final languageCodes = {
+    ...bookNamesByLanguage.keys,
+    ...bookAbbreviationsByLanguage.keys,
+  };
+  for (final languageCode in languageCodes) {
+    final seen = <String, BibleBookEnum>{};
+    final reported = <String>{};
+    final tables = [
+      if (bookNamesByLanguage[languageCode] case final names?) names,
+      if (bookAbbreviationsByLanguage[languageCode] case final abbreviations?)
+        abbreviations,
+    ];
+    for (final table in tables) {
+      for (final entry in table.entries) {
+        for (final term in entry.value) {
+          final normalized = term.toLowerCase().trim();
+          final withoutPeriods = normalized.replaceAll('.', '');
+          final keys = {
+            normalized,
+            withoutPeriods,
+            withoutPeriods.replaceAll(' ', ''),
+          };
+          for (final key in keys) {
+            final existing = seen[key];
+            if (existing != null && existing != entry.key) {
+              final signature =
+                  '$languageCode:$key:${existing.index}:${entry.key.index}';
+              if (reported.add(signature)) {
+                issues.add(
+                  LanguageTermIssue(
+                    languageCode: languageCode,
+                    issueType: 'collision',
+                    description: 'Normalized term "$key" resolves to both '
+                        '${existing.fullName} and ${entry.key.fullName}',
+                    book: entry.key,
+                    term: term,
+                  ),
+                );
+              }
+            } else {
+              seen[key] = entry.key;
+            }
+          }
+        }
+      }
+    }
+  }
 }
 
 void _checkForDuplicates(

@@ -7,7 +7,11 @@
 - Typed parse error classifications while preserving legacy string codes
 - Value equality, checked copying, comparison, and JSON round-tripping
 - Localized long/short reference formatting and supported-language introspection
-- Published CLI executable with language/text/JSON options and a package example
+- Configurable `ReferenceParser` aliases, language priority, and ambiguity rejection
+- Detected-language, selected-book, custom-alias, and alternate-match metadata
+- Complete OSIS and USFM book/reference identifiers with reverse parsing
+- Published CLI executable with language/text/JSON/OSIS/USFM output and a package example
+- UTF-8 CLI batch processing from stdin or files with JSON Lines and exit codes
 - Linux and Windows CI for formatting, analysis, and the full test suite
 
 ### Fixed

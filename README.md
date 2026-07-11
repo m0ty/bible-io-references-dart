@@ -17,6 +17,10 @@ A comprehensive Dart library for parsing Bible verse references into structured 
 - ✅ **Non-throwing parsing**: Nullable and typed-result APIs for user input
 - ✅ **Localized formatting**: Long or abbreviated book names in supported languages
 - ✅ **Value semantics and JSON**: Equality, checked copies, and serialization
+- ✅ **Configurable parsing**: Custom aliases, language priority, and ambiguity policy
+- ✅ **Parse metadata**: Detected languages, selected matches, and alternatives
+- ✅ **Interoperability**: OSIS and USFM identifiers for every supported book
+- ✅ **Batch CLI**: UTF-8 stdin/files, JSON Lines, and meaningful exit codes
 - ✅ **Zero dependencies**: Pure Dart implementation
 
 ## Installation
@@ -59,6 +63,8 @@ void main() {
 - **`VerseRangeRef`**: Verse range reference (start and end VerseRef)
 - **`BibleBookEnum`**: Enumeration of all Bible books with names and abbreviations
 - **`BibleLanguageEnum`**: Supported languages for parsing
+- **`ReferenceParser`**: Reusable parser with aliases and ambiguity configuration
+- **`ParseResult<T>`**: Non-throwing success/failure result with parse metadata
 
 ### Parsing Methods
 
@@ -100,6 +106,26 @@ final fromCode = VerseRef.parse(
 );
 ```
 
+### Configurable Parsing and Detection Metadata
+
+```dart
+final parser = ReferenceParser(
+  aliases: {'jn': BibleBookEnum.john},
+  preferredLanguages: [BibleLanguageEnum.spanish],
+  ambiguityPolicy: ReferenceAmbiguityPolicy.reject,
+);
+
+final result = parser.parseResult('jn 3:16');
+if (result case ParseSuccess(value: final reference, metadata: final metadata)) {
+  print(reference);                         // John 3:16
+  print(metadata.detectedLanguage);         // null: custom global alias
+  print(metadata.alternateMatches.length);  // bundled matches remain visible
+}
+
+final detected = Reference.parseResult('Juan 3:16');
+print(detected.metadataOrNull?.detectedLanguage); // Spanish
+```
+
 ### Localized Formatting
 
 ```dart
@@ -128,6 +154,26 @@ final json = nextVerse.toJson();
 final restored = Reference.fromJson(json);
 print(restored == nextVerse); // true
 ```
+
+### OSIS and USFM Identifiers
+
+```dart
+final verse = Reference.parse('John 3:16');
+print(verse.osisIdentifier); // John.3.16
+print(verse.usfmIdentifier); // JHN 3:16
+
+final range = referenceFromOsisIdentifier('2Cor.6.14-2Cor.7.1');
+print(range); // 2 Corinthians 6:14-7:1
+
+print(BibleBookEnum.john.osisIdentifier); // John
+print(BibleBookEnum.john.usfmIdentifier); // JHN
+```
+
+OSIS ranges use complete dotted endpoints. USFM identifiers use the official
+three-character book codes; `ADE` is retained as a documented
+Paratext-compatible extension for separately modeled Esther additions.
+Mappings follow the [CrossWire OSIS book vocabulary](https://wiki.crosswire.org/OSIS_Book_Abbreviations)
+and the [official USFM book identifier table](https://ubsicap.github.io/usfm/usfm3.0/identification/books.html).
 
 ### Supported Languages
 
@@ -180,12 +226,12 @@ The library handles ambiguous abbreviations intelligently:
 
 ```dart
 // "jn" could be Jonah or John - auto mode prefers Jonah due to precedence
-final ref = VerseRef.parse("jn 1:1");
-print(ref.book); // BibleBookEnum.jonah
+final jonahRef = VerseRef.parse("jn 1:1");
+print(jonahRef.book); // BibleBookEnum.jonah
 
 // "jud" prefers Judges over Jude
-final ref = VerseRef.parse("jud 1:1");
-print(ref.book); // BibleBookEnum.judges
+final judgesRef = VerseRef.parse("jud 1:1");
+print(judgesRef.book); // BibleBookEnum.judges
 ```
 
 ## Command Line Usage
@@ -203,7 +249,23 @@ dart run bible_io_references --language es "Juan 3:16"
 
 dart run bible_io_references --format json "John 3:16"
 # Output: {"type":"verse","book":"jo","chapter":3,"verse":16}
+
+dart run bible_io_references --format osis "John 3:16-17"
+# Output: John.3.16-John.3.17
+
+dart run bible_io_references --format usfm "John 3:16-17"
+# Output: JHN 3:16-17
+
+# UTF-8 batch input, one reference per nonblank line
+dart run bible_io_references --input references.txt --format json
+
+# Or read a batch from stdin
+dart run bible_io_references --batch --format usfm
 ```
+
+Batch JSON uses JSON Lines and includes a record for every success or failure.
+Exit codes are `0` for success, `64` for usage errors, `65` when parsing fails,
+and `66` when input cannot be read or decoded.
 
 ## Performance
 

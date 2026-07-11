@@ -2,6 +2,8 @@ import 'bible_book_enum.dart';
 import 'bible_language_enum.dart';
 import 'languages.dart';
 
+part 'src/reference_parser.dart';
+
 /// A typed classification for reference parsing failures.
 enum ReferenceParseErrorCode {
   emptyReference('empty_reference'),
@@ -11,6 +13,7 @@ enum ReferenceParseErrorCode {
   nonPositiveNumericToken('non_positive_numeric_token'),
   numericTokenOutOfRange('numeric_token_out_of_range'),
   emptyBookToken('empty_book_token'),
+  ambiguousBook('ambiguous_book'),
   unsupportedLanguage('unsupported_language'),
   sameBookRangeNotAscending('same_book_range_not_ascending'),
   crossBookRangeNotAscending('cross_book_range_not_ascending'),
@@ -40,13 +43,22 @@ sealed class ParseResult<T> {
   T? get valueOrNull;
 
   ParseVerseRefError? get errorOrNull;
+
+  /// Metadata recorded while parsing, or `null` when parsing failed.
+  ReferenceParseMetadata? get metadataOrNull;
 }
 
 /// A successful [ParseResult].
 final class ParseSuccess<T> extends ParseResult<T> {
-  const ParseSuccess(this.value);
+  const ParseSuccess(
+    this.value, {
+    this.metadata = ReferenceParseMetadata.empty,
+  });
 
   final T value;
+
+  /// Information about normalization, language detection, and book matching.
+  final ReferenceParseMetadata metadata;
 
   @override
   bool get isSuccess => true;
@@ -56,6 +68,9 @@ final class ParseSuccess<T> extends ParseResult<T> {
 
   @override
   ParseVerseRefError? get errorOrNull => null;
+
+  @override
+  ReferenceParseMetadata get metadataOrNull => metadata;
 }
 
 /// A failed [ParseResult].
@@ -72,6 +87,9 @@ final class ParseFailure<T> extends ParseResult<T> {
 
   @override
   ParseVerseRefError get errorOrNull => error;
+
+  @override
+  ReferenceParseMetadata? get metadataOrNull => null;
 }
 
 /// Broad sanity limits used before optional versification-aware validation.
@@ -107,6 +125,7 @@ class ParseVerseRefError implements Exception {
   /// - `"numeric_token_out_of_range"`: Chapter/verse exceeds broad sanity limits
   /// - `"empty_reference"`: Input is empty or only whitespace
   /// - `"empty_book_token"`: Book token is empty after normalization
+  /// - `"ambiguous_book"`: Several books match under a rejecting policy
   /// - `"unsupported_language"`: Language code not supported
   /// - `"same_book_range_not_ascending"`: Range end comes before start
   /// - `"missing_numeric_token"`: Required numeric component missing
@@ -173,11 +192,7 @@ sealed class Reference {
   /// final range = Reference.parse("John 3:16-17"); // VerseRangeRef
   /// ```
   static Reference parse(String ref, {BibleLanguageEnum? language}) {
-    _ensureReferenceIsNotEmpty(ref);
-    if (_verseRangeRefPattern.hasMatch(ref)) {
-      return VerseRangeRef.parse(ref, language: language);
-    }
-    return VerseRef.parse(ref, language: language);
+    return _standardReferenceParser.parse(ref, language: language);
   }
 
   /// Parses [ref], returning `null` instead of throwing for invalid input.
@@ -191,13 +206,8 @@ sealed class Reference {
   static ParseResult<Reference> parseResult(
     String ref, {
     BibleLanguageEnum? language,
-  }) {
-    try {
-      return ParseSuccess(parse(ref, language: language));
-    } on ParseVerseRefError catch (error) {
-      return ParseFailure(error);
-    }
-  }
+  }) =>
+      _standardReferenceParser.parseResult(ref, language: language);
 
   /// Restores a reference produced by [toJson].
   static Reference fromJson(Map<String, Object?> json) {
@@ -283,7 +293,7 @@ class VerseRef extends Reference implements Comparable<VerseRef> {
   /// final spanishVerse = VerseRef.parse("Juan 3:16", language: BibleLanguageEnum.spanish);
   /// ```
   static VerseRef parse(String ref, {BibleLanguageEnum? language}) {
-    return verseRefFromStr(ref, language: language);
+    return _standardReferenceParser.parseVerse(ref, language: language);
   }
 
   /// Parses [ref], returning `null` instead of throwing for invalid input.
@@ -297,13 +307,8 @@ class VerseRef extends Reference implements Comparable<VerseRef> {
   static ParseResult<VerseRef> parseResult(
     String ref, {
     BibleLanguageEnum? language,
-  }) {
-    try {
-      return ParseSuccess(parse(ref, language: language));
-    } on ParseVerseRefError catch (error) {
-      return ParseFailure(error);
-    }
-  }
+  }) =>
+      _standardReferenceParser.parseVerseResult(ref, language: language);
 
   /// Restores a verse reference produced by [toJson].
   static VerseRef fromJson(Map<String, Object?> json) {
@@ -423,7 +428,7 @@ class VerseRangeRef extends Reference {
   /// final crossBook = VerseRangeRef.parse("John 3:16-Acts 1:2");
   /// ```
   static VerseRangeRef parse(String ref, {BibleLanguageEnum? language}) {
-    return verseRangeRefFromStr(ref, language: language);
+    return _standardReferenceParser.parseRange(ref, language: language);
   }
 
   /// Parses [ref], returning `null` instead of throwing for invalid input.
@@ -437,13 +442,8 @@ class VerseRangeRef extends Reference {
   static ParseResult<VerseRangeRef> parseResult(
     String ref, {
     BibleLanguageEnum? language,
-  }) {
-    try {
-      return ParseSuccess(parse(ref, language: language));
-    } on ParseVerseRefError catch (error) {
-      return ParseFailure(error);
-    }
-  }
+  }) =>
+      _standardReferenceParser.parseRangeResult(ref, language: language);
 
   /// Restores a range reference produced by [toJson].
   static VerseRangeRef fromJson(Map<String, Object?> json) {

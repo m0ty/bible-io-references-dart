@@ -3,96 +3,310 @@ import 'dart:io';
 
 import 'package:bible_io_references/bible_io_references.dart';
 
-void main(List<String> arguments) {
+const _successExitCode = 0;
+const _usageExitCode = 64;
+const _dataErrorExitCode = 65;
+const _noInputExitCode = 66;
+
+Future<void> main(List<String> arguments) async {
+  exitCode = await runCli(arguments);
+}
+
+/// Runs the command-line interface and returns its process exit code.
+///
+/// The injectable streams make batch behavior testable without starting child
+/// processes. Normal callers should use [main].
+Future<int> runCli(
+  List<String> arguments, {
+  Stream<List<int>>? standardInput,
+  StringSink? standardOutput,
+  StringSink? standardError,
+  Stream<List<int>> Function(String path)? openInputFile,
+}) async {
+  final output = standardOutput ?? stdout;
+  final errors = standardError ?? stderr;
+
   if (arguments.contains('--help') || arguments.contains('-h')) {
-    _printUsage(stdout);
-    return;
+    _printUsage(output);
+    return _successExitCode;
   }
 
   BibleLanguageEnum? language;
   var outputFormat = 'text';
+  var batchFromStdin = false;
+  String? inputPath;
   final inputParts = <String>[];
 
   for (var index = 0; index < arguments.length; index++) {
     final argument = arguments[index];
     if (argument == '--language' || argument == '-l') {
       if (index + 1 >= arguments.length) {
-        _usageError('Missing value for $argument.');
-        return;
+        return _usageError('Missing value for $argument.', errors);
       }
       try {
         language = BibleLanguageEnum.fromStr(arguments[++index]);
       } on ArgumentError catch (error) {
-        _usageError(error.message?.toString() ?? error.toString());
-        return;
+        return _usageError(
+          error.message?.toString() ?? error.toString(),
+          errors,
+        );
       }
     } else if (argument.startsWith('--language=')) {
       try {
         language = BibleLanguageEnum.fromStr(argument.substring(11));
       } on ArgumentError catch (error) {
-        _usageError(error.message?.toString() ?? error.toString());
-        return;
+        return _usageError(
+          error.message?.toString() ?? error.toString(),
+          errors,
+        );
       }
     } else if (argument == '--format' || argument == '-f') {
       if (index + 1 >= arguments.length) {
-        _usageError('Missing value for $argument.');
-        return;
+        return _usageError('Missing value for $argument.', errors);
       }
       outputFormat = arguments[++index];
     } else if (argument.startsWith('--format=')) {
       outputFormat = argument.substring(9);
+    } else if (argument == '--batch' || argument == '-b') {
+      batchFromStdin = true;
+    } else if (argument == '--input' || argument == '-i') {
+      if (index + 1 >= arguments.length) {
+        return _usageError('Missing value for $argument.', errors);
+      }
+      inputPath = arguments[++index];
+    } else if (argument.startsWith('--input=')) {
+      inputPath = argument.substring(8);
+      if (inputPath.isEmpty) {
+        return _usageError('Missing value for --input.', errors);
+      }
     } else if (argument.startsWith('-')) {
-      _usageError('Unknown option: $argument');
-      return;
+      return _usageError('Unknown option: $argument', errors);
     } else {
       inputParts.add(argument);
     }
   }
 
-  if (inputParts.isEmpty) {
-    _usageError('A Bible reference is required.');
-    return;
-  }
-  if (outputFormat != 'text' && outputFormat != 'json') {
-    _usageError('Unsupported format "$outputFormat". Use text or json.');
-    return;
+  if (!const {'text', 'json', 'osis', 'usfm'}.contains(outputFormat)) {
+    return _usageError(
+      'Unsupported format "$outputFormat". Use text, json, osis, or usfm.',
+      errors,
+    );
   }
   if (language != null && !language.isParsingSupported) {
-    _usageError('Language "${language.code}" has no registered parser data.');
-    return;
+    return _usageError(
+      'Language "${language.code}" has no registered parser data.',
+      errors,
+    );
+  }
+  if (batchFromStdin && inputPath != null) {
+    return _usageError(
+      '--batch and --input cannot be used together.',
+      errors,
+    );
   }
 
-  final input = inputParts.join(' ');
+  final isBatch = batchFromStdin || inputPath != null;
+  if (isBatch && inputParts.isNotEmpty) {
+    return _usageError(
+      'A positional reference cannot be combined with batch input.',
+      errors,
+    );
+  }
+  if (!isBatch && inputParts.isEmpty) {
+    return _usageError('A Bible reference is required.', errors);
+  }
 
+  if (!isBatch) {
+    return _runSingle(
+      inputParts.join(' '),
+      language: language,
+      outputFormat: outputFormat,
+      output: output,
+      errors: errors,
+    );
+  }
+
+  try {
+    final Stream<List<int>> inputBytes;
+    if (inputPath case final path?) {
+      final opener = openInputFile ?? _openInputFile;
+      inputBytes = opener(path);
+    } else {
+      inputBytes = standardInput ?? stdin;
+    }
+
+    return await _runBatch(
+      inputBytes,
+      language: language,
+      outputFormat: outputFormat,
+      output: output,
+      errors: errors,
+    );
+  } on IOException catch (error) {
+    final source = inputPath == null ? 'standard input' : '"$inputPath"';
+    errors.writeln('Unable to read $source: ${_ioErrorMessage(error)}');
+    return _noInputExitCode;
+  } on FormatException {
+    final source = inputPath == null ? 'standard input' : '"$inputPath"';
+    errors.writeln('Unable to read $source: input is not valid UTF-8.');
+    return _noInputExitCode;
+  }
+}
+
+Stream<List<int>> _openInputFile(String path) => File(path).openRead();
+
+int _runSingle(
+  String input, {
+  required BibleLanguageEnum? language,
+  required String outputFormat,
+  required StringSink output,
+  required StringSink errors,
+}) {
   try {
     final reference = Reference.parse(input, language: language);
     if (outputFormat == 'json') {
-      stdout.writeln(jsonEncode(reference.toJson()));
+      output.writeln(jsonEncode(reference.toJson()));
     } else {
-      stdout.writeln(
-        reference.format(
-          language: language ?? BibleLanguageEnum.english,
-        ),
-      );
+      output.writeln(_renderReference(reference, outputFormat, language));
     }
+    return _successExitCode;
   } on ParseVerseRefError catch (error) {
-    stderr.writeln('Unable to parse "$input" (${error.code}).');
-    if (error.details case final details?) {
-      stderr.writeln(details);
+    if (outputFormat == 'json') {
+      output.writeln(
+        jsonEncode({
+          'ok': false,
+          'input': input,
+          'error': {
+            'code': error.code,
+            if (error.details case final details?) 'details': details,
+          },
+        }),
+      );
+    } else {
+      _writeTextDiagnostic(errors, input: input, error: error);
     }
-    exitCode = 65;
+    return _dataErrorExitCode;
   }
 }
 
-void _usageError(String message) {
-  stderr.writeln(message);
-  _printUsage(stderr);
-  exitCode = 64;
+Future<int> _runBatch(
+  Stream<List<int>> inputBytes, {
+  required BibleLanguageEnum? language,
+  required String outputFormat,
+  required StringSink output,
+  required StringSink errors,
+}) async {
+  var lineNumber = 0;
+  var hadFailure = false;
+  final lines =
+      inputBytes.transform(utf8.decoder).transform(const LineSplitter());
+
+  await for (final rawLine in lines) {
+    lineNumber++;
+    final input = rawLine.trim();
+    if (input.isEmpty) continue;
+
+    try {
+      final reference = Reference.parse(input, language: language);
+      if (outputFormat == 'json') {
+        output.writeln(
+          jsonEncode({
+            'line': lineNumber,
+            'input': input,
+            'ok': true,
+            'reference': reference.toJson(),
+          }),
+        );
+      } else {
+        output.writeln(_renderReference(reference, outputFormat, language));
+      }
+    } on ParseVerseRefError catch (error) {
+      hadFailure = true;
+      if (outputFormat == 'json') {
+        output.writeln(
+          jsonEncode({
+            'line': lineNumber,
+            'input': input,
+            'ok': false,
+            'error': {
+              'code': error.code,
+              if (error.details case final details?) 'details': details,
+            },
+          }),
+        );
+      } else {
+        _writeTextDiagnostic(
+          errors,
+          input: input,
+          error: error,
+          lineNumber: lineNumber,
+        );
+      }
+    }
+  }
+
+  return hadFailure ? _dataErrorExitCode : _successExitCode;
 }
 
-void _printUsage(IOSink sink) {
+String _renderReference(
+  Reference reference,
+  String outputFormat,
+  BibleLanguageEnum? language,
+) =>
+    switch (outputFormat) {
+      'text' => reference.format(
+          language: language ?? BibleLanguageEnum.english,
+        ),
+      'osis' => reference.osisIdentifier,
+      'usfm' => reference.usfmIdentifier,
+      _ => throw StateError('unsupported rendered format: $outputFormat'),
+    };
+
+void _writeTextDiagnostic(
+  StringSink sink, {
+  required String input,
+  required ParseVerseRefError error,
+  int? lineNumber,
+}) {
+  final prefix = lineNumber == null ? '' : 'Line $lineNumber: ';
+  sink.writeln('${prefix}Unable to parse "$input" (${error.code}).');
+  if (error.details case final details?) {
+    sink.writeln(details);
+  }
+}
+
+String _ioErrorMessage(IOException error) {
+  if (error case FileSystemException(:final message)) {
+    return message.endsWith('.') ? message : '$message.';
+  }
+  return error.toString();
+}
+
+int _usageError(String message, StringSink sink) {
+  sink.writeln(message);
+  _printUsage(sink);
+  return _usageExitCode;
+}
+
+void _printUsage(StringSink sink) {
+  sink.writeln('Usage:');
   sink.writeln(
-    'Usage: bible_io_references [--language CODE] [--format text|json] '
+    '  bible_io_references [--language CODE] '
+    '[--format text|json|osis|usfm] '
     '"John 3:16"',
   );
+  sink.writeln(
+    '  bible_io_references [--language CODE] '
+    '[--format text|json|osis|usfm] --batch',
+  );
+  sink.writeln(
+    '  bible_io_references [--language CODE] '
+    '[--format text|json|osis|usfm] '
+    '--input FILE',
+  );
+  sink.writeln();
+  sink.writeln('Batch input is UTF-8 with one reference per nonblank line.');
+  sink.writeln('JSON batch output is JSON Lines, including per-line errors.');
+  sink.writeln(
+      'Exit codes: 0 success, 64 usage, 65 parse failure, 66 input error.');
 }

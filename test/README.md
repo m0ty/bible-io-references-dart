@@ -38,6 +38,9 @@ This document describes the comprehensive test suite for the `bible_io_reference
 
 - `reference_api_test.dart`: Value semantics, JSON, typed results, and range dispatch
 - `reference_formatter_test.dart`: Localized formatting and language support metadata
+- `configurable_parser_test.dart`: Custom aliases, ambiguity policies, and detection metadata
+- `reference_identifier_interop_test.dart`: OSIS/USFM mappings and round trips
+- `cli_batch_test.dart`: Batch sources, JSON Lines, diagnostics, and exit codes
 
 ## Running Tests
 
