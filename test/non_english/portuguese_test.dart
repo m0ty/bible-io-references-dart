@@ -6,7 +6,8 @@ void main() {
     test('parse Portuguese verse reference', () {
       // Using a common book name that should exist in most languages
       final names = bookNamesByLanguage['pt']![BibleBookEnum.john]!;
-      final ref = verseRefFromStr('${names[0]} 3:16', language: BibleLanguageEnum.portuguese);
+      final ref = verseRefFromStr('${names[0]} 3:16',
+          language: BibleLanguageEnum.portuguese);
       expect(ref.book, BibleBookEnum.john);
       expect(ref.chapter, 3);
       expect(ref.verse, 16);
@@ -14,7 +15,8 @@ void main() {
 
     test('parse Portuguese verse range', () {
       final names = bookNamesByLanguage['pt']![BibleBookEnum.john]!;
-      final ref = verseRangeRefFromStr('${names[0]} 3:16-17', language: BibleLanguageEnum.portuguese);
+      final ref = verseRangeRefFromStr('${names[0]} 3:16-17',
+          language: BibleLanguageEnum.portuguese);
       expect(ref.start.book, BibleBookEnum.john);
       expect(ref.start.chapter, 3);
       expect(ref.start.verse, 16);
@@ -27,9 +29,11 @@ void main() {
     for (final book in BibleBookEnum.values) {
       test('parse Portuguese book name: ${book.name}', () {
         final names = bookNamesByLanguage['pt']![book]!;
-        expect(names, isNotEmpty, reason: 'Missing Portuguese book names for ${book.name}');
+        expect(names, isNotEmpty,
+            reason: 'Missing Portuguese book names for ${book.name}');
 
-        final ref = verseRefFromStr('${names[0]} 1:1', language: BibleLanguageEnum.portuguese);
+        final ref = verseRefFromStr('${names[0]} 1:1',
+            language: BibleLanguageEnum.portuguese);
         expect(ref.book, book);
         expect(ref.chapter, 1);
         expect(ref.verse, 1);
@@ -40,11 +44,14 @@ void main() {
     for (final book in BibleBookEnum.values) {
       test('parse Portuguese book abbreviations: ${book.name}', () {
         final abbreviations = bookAbbreviationsByLanguage['pt']![book]!;
-        expect(abbreviations, isNotEmpty, reason: 'Missing Portuguese book abbreviations for ${book.name}');
+        expect(abbreviations, isNotEmpty,
+            reason: 'Missing Portuguese book abbreviations for ${book.name}');
 
         for (final abbreviation in abbreviations) {
-          final ref = verseRefFromStr('$abbreviation 1:1', language: BibleLanguageEnum.portuguese);
-          expect(ref.book, book, reason: 'Failed to parse abbreviation: $abbreviation');
+          final ref = verseRefFromStr('$abbreviation 1:1',
+              language: BibleLanguageEnum.portuguese);
+          expect(ref.book, book,
+              reason: 'Failed to parse abbreviation: $abbreviation');
           expect(ref.chapter, 1);
           expect(ref.verse, 1);
         }

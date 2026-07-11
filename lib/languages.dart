@@ -1,6 +1,7 @@
 // Language data for book names and abbreviations.
 
 import 'bible_book_enum.dart';
+import 'bible_language_enum.dart';
 import 'languages/arabic.dart';
 import 'languages/chinese.dart';
 import 'languages/french.dart';
@@ -15,7 +16,7 @@ import 'languages/spanish.dart';
 import 'languages/tagalog.dart';
 
 /// Book names by language code.
-final Map<String, Map<BibleBookEnum, List<String>>> bookNamesByLanguage = {
+const Map<String, Map<BibleBookEnum, List<String>>> bookNamesByLanguage = {
   'ar': arabicBookNames,
   'zh': chineseBookNames,
   'he': hebrewBookNames,
@@ -31,7 +32,8 @@ final Map<String, Map<BibleBookEnum, List<String>>> bookNamesByLanguage = {
 };
 
 /// Book abbreviations by language code.
-final Map<String, Map<BibleBookEnum, List<String>>> bookAbbreviationsByLanguage = {
+const Map<String, Map<BibleBookEnum, List<String>>>
+    bookAbbreviationsByLanguage = {
   'ar': arabicBookAbbreviations,
   'zh': chineseBookAbbreviations,
   'he': hebrewBookAbbreviations,
@@ -45,3 +47,25 @@ final Map<String, Map<BibleBookEnum, List<String>>> bookAbbreviationsByLanguage 
   'ru': russianBookAbbreviations,
   'pt': portugueseBookAbbreviations,
 };
+
+/// Languages accepted by the reference parser.
+///
+/// This set is derived from the registered language data, with [BibleLanguageEnum.english]
+/// added because English names live on [BibleBookEnum], and
+/// [BibleLanguageEnum.auto] added because it is a supported parser mode. The set
+/// is unmodifiable and follows [BibleLanguageEnum.values] order.
+final Set<BibleLanguageEnum> supportedParsingLanguages = Set.unmodifiable(
+  BibleLanguageEnum.values.where(
+    (language) =>
+        language == BibleLanguageEnum.auto ||
+        language == BibleLanguageEnum.english ||
+        bookNamesByLanguage.containsKey(language.code) ||
+        bookAbbreviationsByLanguage.containsKey(language.code),
+  ),
+);
+
+/// Parsing-support information for a language identifier.
+extension BibleLanguageParsingSupport on BibleLanguageEnum {
+  /// Whether this language (or parser mode) has registered parsing support.
+  bool get isParsingSupported => supportedParsingLanguages.contains(this);
+}

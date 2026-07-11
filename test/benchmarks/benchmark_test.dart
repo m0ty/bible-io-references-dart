@@ -1,3 +1,6 @@
+@Tags(['performance'])
+library;
+
 import 'package:bible_io_references/package.dart';
 import 'package:test/test.dart';
 
@@ -63,7 +66,8 @@ void main() {
       final avgTimePerParse = duration.inMicroseconds / totalParses;
 
       print('Parsed $totalParses ranges in ${duration.inMilliseconds}ms');
-      print('Average time per range parse: ${avgTimePerParse.toStringAsFixed(2)}μs');
+      print(
+          'Average time per range parse: ${avgTimePerParse.toStringAsFixed(2)}μs');
 
       expect(avgTimePerParse, lessThan(2000),
           reason: 'Range parsing should be faster than 2ms per reference');
@@ -94,8 +98,10 @@ void main() {
       final totalParses = iterations * testRefs.length;
       final avgTimePerParse = duration.inMicroseconds / totalParses;
 
-      print('Parsed $totalParses auto-language references in ${duration.inMilliseconds}ms');
-      print('Average time per auto-language parse: ${avgTimePerParse.toStringAsFixed(2)}μs');
+      print(
+          'Parsed $totalParses auto-language references in ${duration.inMilliseconds}ms');
+      print(
+          'Average time per auto-language parse: ${avgTimePerParse.toStringAsFixed(2)}μs');
 
       expect(avgTimePerParse, lessThan(2000),
           reason: 'Auto language parsing should be reasonable');
@@ -115,22 +121,28 @@ void main() {
       expect(refs.last.book, BibleBookEnum.john);
     });
 
-    test('lookup table initialization performance', () {
-      // Test that the global lookup tables are initialized efficiently
-      final start = DateTime.now();
-
-      // Access the global instances (should already be initialized)
+    test('lookup table access performance', () {
+      // Access once before measuring so this benchmark measures shared lookup
+      // access rather than lazy initialization or scheduler noise.
       final precedence = autoLanguagePrecedence;
       final collisions = autoLanguageCollisions;
 
-      final end = DateTime.now();
-      final duration = end.difference(start);
-
-      expect(duration.inMicroseconds, lessThan(1000),
-          reason: 'Global lookup table access should be fast');
-
       expect(precedence, isNotEmpty);
       expect(collisions, isNotEmpty);
+
+      const iterations = 10000;
+      var observedEntries = 0;
+      final stopwatch = Stopwatch()..start();
+      for (var i = 0; i < iterations; i++) {
+        observedEntries += autoLanguagePrecedence.length;
+        observedEntries += autoLanguageCollisions.length;
+      }
+      stopwatch.stop();
+
+      final averageAccessTime = stopwatch.elapsedMicroseconds / iterations;
+      expect(averageAccessTime, lessThan(100),
+          reason: 'Shared lookup access should average less than 100µs');
+      expect(observedEntries, greaterThan(0));
     });
 
     test('enum parsing performance', () {
@@ -150,8 +162,10 @@ void main() {
       final totalParses = iterations * testBooks.length;
       final avgTimePerParse = duration.inMicroseconds / totalParses;
 
-      print('Parsed $totalParses book abbreviations in ${duration.inMilliseconds}ms');
-      print('Average time per book parse: ${avgTimePerParse.toStringAsFixed(2)}μs');
+      print(
+          'Parsed $totalParses book abbreviations in ${duration.inMilliseconds}ms');
+      print(
+          'Average time per book parse: ${avgTimePerParse.toStringAsFixed(2)}μs');
 
       expect(avgTimePerParse, lessThan(100),
           reason: 'Book abbreviation parsing should be very fast');

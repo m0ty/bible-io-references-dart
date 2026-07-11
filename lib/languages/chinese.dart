@@ -73,18 +73,81 @@ const Map<BibleBookEnum, List<String>> chineseBookNames = {
   BibleBookEnum.wisdom: ['所罗门智训', '所羅門智訓', '智慧篇', '智慧篇'],
   BibleBookEnum.sirach: ['便西拉智训', '便西拉智訓', '德训篇', '德訓篇'],
   BibleBookEnum.baruch: ['巴录书', '巴錄書', '巴路克', '巴路克'],
-  BibleBookEnum.firstMaccabees: ['马加比一书', '馬加比一書', '马加比传上', '馬加比傳上', '玛加伯上', '瑪加伯上'],
-  BibleBookEnum.secondMaccabees: ['马加比二书', '馬加比二書', '马加比传下', '馬加比傳下', '玛加伯下', '瑪加伯下'],
-  BibleBookEnum.thirdMaccabees: ['马加比三书', '馬加比三書', '玛加伯三', '瑪加伯三', '玛喀维传三', '瑪喀維傳三'],
-  BibleBookEnum.fourthMaccabees: ['马加比四书', '馬加比四書', '玛加伯四', '瑪加伯四', '玛喀维传四', '瑪喀維傳四'],
-  BibleBookEnum.estherAdditions: ['以斯帖补编', '以斯帖補編', '以斯帖补篇', '以斯帖補篇', '以斯帖记补编', '以斯帖記補編'],
+  BibleBookEnum.firstMaccabees: [
+    '马加比一书',
+    '馬加比一書',
+    '马加比传上',
+    '馬加比傳上',
+    '玛加伯上',
+    '瑪加伯上'
+  ],
+  BibleBookEnum.secondMaccabees: [
+    '马加比二书',
+    '馬加比二書',
+    '马加比传下',
+    '馬加比傳下',
+    '玛加伯下',
+    '瑪加伯下'
+  ],
+  BibleBookEnum.thirdMaccabees: [
+    '马加比三书',
+    '馬加比三書',
+    '玛加伯三',
+    '瑪加伯三',
+    '玛喀维传三',
+    '瑪喀維傳三'
+  ],
+  BibleBookEnum.fourthMaccabees: [
+    '马加比四书',
+    '馬加比四書',
+    '玛加伯四',
+    '瑪加伯四',
+    '玛喀维传四',
+    '瑪喀維傳四'
+  ],
+  BibleBookEnum.estherAdditions: [
+    '以斯帖补编',
+    '以斯帖補編',
+    '以斯帖补篇',
+    '以斯帖補篇',
+    '以斯帖记补编',
+    '以斯帖記補編'
+  ],
   BibleBookEnum.danielSongOfThree: ['三童歌', '三童歌', '三青年赞美上主歌', '三青年讚美上主歌'],
   BibleBookEnum.danielSusanna: ['苏撒拿传', '蘇撒拿傳', '苏撒拿', '蘇撒拿'],
   BibleBookEnum.danielBelAndTheDragon: ['彼勒与大龙', '彼勒與大龍', '比勒与大龙', '比勒與大龍'],
-  BibleBookEnum.firstEsdras: ['以斯拉续编上卷', '以斯拉續編上卷', '以斯拉上', '以斯拉上', '埃斯德拉斯一书', '埃斯德拉斯一書'],
-  BibleBookEnum.secondEsdras: ['以斯拉续编下卷', '以斯拉續編下卷', '以斯拉下', '以斯拉下', '埃斯德拉斯二书', '埃斯德拉斯二書'],
-  BibleBookEnum.prayerOfManasseh: ['玛拿西祷言', '瑪拿西禱言', '玛拿西祷词', '瑪拿西禱詞', '默纳舍祷词', '默納舍禱詞'],
-  BibleBookEnum.psalm151: ['诗篇151', '詩篇151', '诗篇第151篇', '詩篇第151篇', '诗篇增补', '詩篇增補'],
+  BibleBookEnum.firstEsdras: [
+    '以斯拉续编上卷',
+    '以斯拉續編上卷',
+    '以斯拉上',
+    '以斯拉上',
+    '埃斯德拉斯一书',
+    '埃斯德拉斯一書'
+  ],
+  BibleBookEnum.secondEsdras: [
+    '以斯拉续编下卷',
+    '以斯拉續編下卷',
+    '以斯拉下',
+    '以斯拉下',
+    '埃斯德拉斯二书',
+    '埃斯德拉斯二書'
+  ],
+  BibleBookEnum.prayerOfManasseh: [
+    '玛拿西祷言',
+    '瑪拿西禱言',
+    '玛拿西祷词',
+    '瑪拿西禱詞',
+    '默纳舍祷词',
+    '默納舍禱詞'
+  ],
+  BibleBookEnum.psalm151: [
+    '诗篇151',
+    '詩篇151',
+    '诗篇第151篇',
+    '詩篇第151篇',
+    '诗篇增补',
+    '詩篇增補'
+  ],
 };
 
 /// Chinese book abbreviations.
@@ -160,11 +223,50 @@ const Map<BibleBookEnum, List<String>> chineseBookAbbreviations = {
   BibleBookEnum.wisdom: ['智慧', '智训', '智訓'],
   BibleBookEnum.sirach: ['便西拉', '德训', '德訓'],
   BibleBookEnum.baruch: ['巴录', '巴錄', '巴', '巴路克'],
-  BibleBookEnum.firstMaccabees: ['马加比一', '馬加比一', '马加比上', '馬加比上', '玛加伯上', '瑪加伯上', '马加比传上', '馬加比傳上'],
-  BibleBookEnum.secondMaccabees: ['马加比二', '馬加比二', '马加比下', '馬加比下', '玛加伯下', '瑪加伯下', '马加比传下', '馬加比傳下'],
-  BibleBookEnum.thirdMaccabees: ['马加比三', '馬加比三', '玛加伯三', '瑪加伯三', '马加比三书', '馬加比三書'],
-  BibleBookEnum.fourthMaccabees: ['马加比四', '馬加比四', '玛加伯四', '瑪加伯四', '马加比四书', '馬加比四書'],
-  BibleBookEnum.estherAdditions: ['斯补', '斯補', '以斯帖补编', '以斯帖補編', '以斯帖补篇', '以斯帖補篇'],
+  BibleBookEnum.firstMaccabees: [
+    '马加比一',
+    '馬加比一',
+    '马加比上',
+    '馬加比上',
+    '玛加伯上',
+    '瑪加伯上',
+    '马加比传上',
+    '馬加比傳上'
+  ],
+  BibleBookEnum.secondMaccabees: [
+    '马加比二',
+    '馬加比二',
+    '马加比下',
+    '馬加比下',
+    '玛加伯下',
+    '瑪加伯下',
+    '马加比传下',
+    '馬加比傳下'
+  ],
+  BibleBookEnum.thirdMaccabees: [
+    '马加比三',
+    '馬加比三',
+    '玛加伯三',
+    '瑪加伯三',
+    '马加比三书',
+    '馬加比三書'
+  ],
+  BibleBookEnum.fourthMaccabees: [
+    '马加比四',
+    '馬加比四',
+    '玛加伯四',
+    '瑪加伯四',
+    '马加比四书',
+    '馬加比四書'
+  ],
+  BibleBookEnum.estherAdditions: [
+    '斯补',
+    '斯補',
+    '以斯帖补编',
+    '以斯帖補編',
+    '以斯帖补篇',
+    '以斯帖補篇'
+  ],
   BibleBookEnum.danielSongOfThree: ['三童歌'],
   BibleBookEnum.danielSusanna: ['苏撒拿', '蘇撒拿'],
   BibleBookEnum.danielBelAndTheDragon: ['彼勒与大龙', '彼勒與大龍', '比勒与大龙', '比勒與大龍'],

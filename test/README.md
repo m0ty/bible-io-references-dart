@@ -22,17 +22,22 @@ This document describes the comprehensive test suite for the `bible_io_reference
 
 ### `test/property/`
 **Property-based and quality assurance tests**
-- `property_tests.dart`: Edge cases, boundary conditions, round-trip parsing
-- `language_audit_tests.dart`: Language data quality validation
+- `property_test.dart`: Edge cases, boundary conditions, round-trip parsing
+- `language_audit_test.dart`: Language data quality validation
 
 ### `test/integration/`
 **Integration and system-level tests**
-- `integration_tests.dart`: Complex multi-language scenarios, error propagation
-- `concurrent_tests.dart`: Thread safety and concurrent parsing
+- `integration_test.dart`: Complex multi-language scenarios, error propagation
+- `concurrent_test.dart`: Same-isolate concurrent scheduling and stress scenarios
 
 ### `test/benchmarks/`
 **Performance testing**
-- `benchmark_tests.dart`: Parsing speed, memory efficiency, lookup performance
+- `benchmark_test.dart`: Parsing speed, memory efficiency, lookup performance
+
+### Public API tests
+
+- `reference_api_test.dart`: Value semantics, JSON, typed results, and range dispatch
+- `reference_formatter_test.dart`: Localized formatting and language support metadata
 
 ## Running Tests
 
@@ -41,13 +46,13 @@ This document describes the comprehensive test suite for the `bible_io_reference
 dart test
 
 # Run specific test file
-dart test test/property/property_tests.dart
+dart test test/property/property_test.dart
 
 # Run with coverage (if available)
 dart test --coverage=coverage
 
 # Run benchmarks only
-dart test test/benchmarks/
+dart test --tags performance
 ```
 
 ## Test Categories

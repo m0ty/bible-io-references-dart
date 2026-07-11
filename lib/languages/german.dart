@@ -95,24 +95,89 @@ const Map<BibleBookEnum, List<String>> germanBookNames = {
 
   BibleBookEnum.estherAdditions: ["Zusätze zu Esther", "Esther (Zusätze)"],
   BibleBookEnum.danielSongOfThree: ["Gebet Asarjas", "Gesang der drei Männer"],
-  BibleBookEnum.danielSusanna: ["Susanna", "Susanna und Daniel", "Geschichte von Susanna und Daniel"],
+  BibleBookEnum.danielSusanna: [
+    "Susanna",
+    "Susanna und Daniel",
+    "Geschichte von Susanna und Daniel"
+  ],
   BibleBookEnum.danielBelAndTheDragon: ["Bel und Drache", "Bel und der Drache"],
 
   // Names vary strongly in German traditions; include both neutral + explanatory variants
-  BibleBookEnum.firstEsdras: ["1 Esdras", "1. Esdras", "Esra (griechische Ergänzung)", "3. Esra", "3 Esra"],
-  BibleBookEnum.secondEsdras: ["2 Esdras", "2. Esdras", "Esra (lateinische Ergänzung)", "4. Esra", "4 Esra"],
+  BibleBookEnum.firstEsdras: [
+    "1 Esdras",
+    "1. Esdras",
+    "Esra (griechische Ergänzung)",
+    "3. Esra",
+    "3 Esra"
+  ],
+  BibleBookEnum.secondEsdras: [
+    "2 Esdras",
+    "2. Esdras",
+    "Esra (lateinische Ergänzung)",
+    "4. Esra",
+    "4 Esra"
+  ],
 
-  BibleBookEnum.prayerOfManasseh: ["Gebet des Manasse", "Gebet Manasses", "Gebet Manesses"],
+  BibleBookEnum.prayerOfManasseh: [
+    "Gebet des Manasse",
+    "Gebet Manasses",
+    "Gebet Manesses"
+  ],
   BibleBookEnum.psalm151: ["Psalm 151"],
 };
 
 const Map<BibleBookEnum, List<String>> germanBookAbbreviations = {
   // Pentateuch (German practice: Gen/Ex/Lev/Num/Dtn; also common 1Mo/2Mo… forms)
-  BibleBookEnum.genesis: ["Gen", "gen", "GEN", "1Mo", "1 Mo", "1.Mo", "1 Mose", "1. Mose"],
-  BibleBookEnum.exodus: ["Ex", "ex", "EXO", "2Mo", "2 Mo", "2.Mo", "2 Mose", "2. Mose"],
-  BibleBookEnum.leviticus: ["Lev", "lev", "LEV", "3Mo", "3 Mo", "3.Mo", "3 Mose", "3. Mose"],
-  BibleBookEnum.numbers: ["Num", "num", "NUM", "4Mo", "4 Mo", "4.Mo", "4 Mose", "4. Mose"],
-  BibleBookEnum.deuteronomy: ["Dtn", "dtn", "DEU", "5Mo", "5 Mo", "5.Mo", "5 Mose", "5. Mose"],
+  BibleBookEnum.genesis: [
+    "Gen",
+    "gen",
+    "GEN",
+    "1Mo",
+    "1 Mo",
+    "1.Mo",
+    "1 Mose",
+    "1. Mose"
+  ],
+  BibleBookEnum.exodus: [
+    "Ex",
+    "ex",
+    "EXO",
+    "2Mo",
+    "2 Mo",
+    "2.Mo",
+    "2 Mose",
+    "2. Mose"
+  ],
+  BibleBookEnum.leviticus: [
+    "Lev",
+    "lev",
+    "LEV",
+    "3Mo",
+    "3 Mo",
+    "3.Mo",
+    "3 Mose",
+    "3. Mose"
+  ],
+  BibleBookEnum.numbers: [
+    "Num",
+    "num",
+    "NUM",
+    "4Mo",
+    "4 Mo",
+    "4.Mo",
+    "4 Mose",
+    "4. Mose"
+  ],
+  BibleBookEnum.deuteronomy: [
+    "Dtn",
+    "dtn",
+    "DEU",
+    "5Mo",
+    "5 Mo",
+    "5.Mo",
+    "5 Mose",
+    "5. Mose"
+  ],
 
   BibleBookEnum.joshua: ["Jos", "jos", "JOS"],
   BibleBookEnum.judges: ["Ri", "ri", "JDG"],
@@ -196,17 +261,65 @@ const Map<BibleBookEnum, List<String>> germanBookAbbreviations = {
   BibleBookEnum.baruch: ["Bar", "bar", "BAR"],
   BibleBookEnum.firstMaccabees: ["1Makk", "1 Makk", "1. Makk", "1MA"],
   BibleBookEnum.secondMaccabees: ["2Makk", "2 Makk", "2. Makk", "2MA"],
-  BibleBookEnum.thirdMaccabees: ["3Makk", "3 Makk", "3. Makk", "3MA", "3Macc", "3macc"],
-  BibleBookEnum.fourthMaccabees: ["4Makk", "4 Makk", "4. Makk", "4MA", "4Macc", "4macc"],
+  BibleBookEnum.thirdMaccabees: [
+    "3Makk",
+    "3 Makk",
+    "3. Makk",
+    "3MA",
+    "3Macc",
+    "3macc"
+  ],
+  BibleBookEnum.fourthMaccabees: [
+    "4Makk",
+    "4 Makk",
+    "4. Makk",
+    "4MA",
+    "4Macc",
+    "4macc"
+  ],
 
-  BibleBookEnum.estherAdditions: ["St zu Est", "StzuEst", "EstZ", "estz", "ESG", "EsthGr", "esthgr"],
-  BibleBookEnum.danielSongOfThree: ["S3Y", "PrAzar", "prazar", "Gesang der drei Männer", "Gebet Asarjas"],
+  BibleBookEnum.estherAdditions: [
+    "St zu Est",
+    "StzuEst",
+    "EstZ",
+    "estz",
+    "ESG",
+    "EsthGr",
+    "esthgr"
+  ],
+  BibleBookEnum.danielSongOfThree: [
+    "S3Y",
+    "PrAzar",
+    "prazar",
+    "Gesang der drei Männer",
+    "Gebet Asarjas"
+  ],
   BibleBookEnum.danielSusanna: ["Sus", "sus", "SUS", "Susanna"],
   BibleBookEnum.danielBelAndTheDragon: ["Bel", "bel", "BEL", "Bel und Drache"],
 
-  BibleBookEnum.firstEsdras: ["1ES", "1Esd", "1esd", "1 Esd", "3Esra", "3 Esra"],
-  BibleBookEnum.secondEsdras: ["2ES", "2Esd", "2esd", "2 Esd", "4Esra", "4 Esra"],
+  BibleBookEnum.firstEsdras: [
+    "1ES",
+    "1Esd",
+    "1esd",
+    "1 Esd",
+    "3Esra",
+    "3 Esra"
+  ],
+  BibleBookEnum.secondEsdras: [
+    "2ES",
+    "2Esd",
+    "2esd",
+    "2 Esd",
+    "4Esra",
+    "4 Esra"
+  ],
 
-  BibleBookEnum.prayerOfManasseh: ["Geb.Man", "GebMan", "MAN", "PrMan", "prman"],
+  BibleBookEnum.prayerOfManasseh: [
+    "Geb.Man",
+    "GebMan",
+    "MAN",
+    "PrMan",
+    "prman"
+  ],
   BibleBookEnum.psalm151: ["Ps151", "ps151", "PS2", "AddPs", "addps"],
 };

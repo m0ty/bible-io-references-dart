@@ -89,16 +89,16 @@ void main() {
 
     test('concurrent auto language parsing', () async {
       final testRefs = [
-        'Juan 3:16', // Spanish
-        'Jean 3:16', // French
-        'João 3:16', // Portuguese
-        'John 3:16', // English
-        'jn 1:1', // Collision case
+        ('Juan 3:16', BibleBookEnum.john, 3, 16), // Spanish
+        ('Jean 3:16', BibleBookEnum.john, 3, 16), // French
+        ('João 3:16', BibleBookEnum.john, 3, 16), // Portuguese
+        ('John 3:16', BibleBookEnum.john, 3, 16), // English
+        ('jn 1:1', BibleBookEnum.jonah, 1, 1), // Collision case
       ];
 
       final futures = <Future<VerseRef>>[];
       for (var i = 0; i < 30; i++) {
-        for (final ref in testRefs) {
+        for (final (ref, _, _, _) in testRefs) {
           futures.add(Future(() => verseRefFromStr(ref)));
         }
       }
@@ -106,10 +106,12 @@ void main() {
       final results = await Future.wait(futures);
 
       expect(results.length, 30 * testRefs.length);
-      for (final result in results) {
-        expect(result.book, BibleBookEnum.john);
-        expect(result.chapter, anyOf(3, 1));
-        expect(result.verse, anyOf(16, 1));
+      for (var i = 0; i < results.length; i++) {
+        final (_, expectedBook, expectedChapter, expectedVerse) =
+            testRefs[i % testRefs.length];
+        expect(results[i].book, expectedBook);
+        expect(results[i].chapter, expectedChapter);
+        expect(results[i].verse, expectedVerse);
       }
     });
 
@@ -122,7 +124,8 @@ void main() {
           // Mix of different operations
           verseRefFromStr('John ${i % 20 + 1}:${i % 25 + 1}');
           if (i % 3 == 0) {
-            verseRangeRefFromStr('Matthew ${i % 28 + 1}:${i % 30 + 1}-${i % 28 + 1}:${i % 30 + 2}');
+            verseRangeRefFromStr(
+                'Matthew ${i % 28 + 1}:${i % 30 + 1}-${i % 28 + 1}:${i % 30 + 2}');
           }
           if (i % 5 == 0) {
             Reference.parse('Psalms ${i % 150 + 1}:${i % 10 + 1}');

@@ -14,18 +14,37 @@ const Map<BibleBookEnum, List<String>> russianBookNames = {
   BibleBookEnum.ruth: ["Руфь", "Книга Руфи"],
 
   // Russian/Synodal practice also uses 1–4 Царств for Samuel+Kings
-  BibleBookEnum.firstSamuel: ["1 Самуила", "1-я книга Самуила", "1 Царств", "Первая книга Царств"],
-  BibleBookEnum.secondSamuel: ["2 Самуила", "2-я книга Самуила", "2 Царств", "Вторая книга Царств"],
+  BibleBookEnum.firstSamuel: [
+    "1 Самуила",
+    "1-я книга Самуила",
+    "1 Царств",
+    "Первая книга Царств"
+  ],
+  BibleBookEnum.secondSamuel: [
+    "2 Самуила",
+    "2-я книга Самуила",
+    "2 Царств",
+    "Вторая книга Царств"
+  ],
   BibleBookEnum.firstKings: ["1 Царей", "3 Царств", "Третья книга Царств"],
-  BibleBookEnum.secondKings: ["2 Царей", "4 Царств", "Четвертая книга Царств", "Четвёртая книга Царств"],
+  BibleBookEnum.secondKings: [
+    "2 Царей",
+    "4 Царств",
+    "Четвертая книга Царств",
+    "Четвёртая книга Царств"
+  ],
 
   BibleBookEnum.firstChronicles: [
-    "1 Паралипоменон", "Первая книга Паралипоменон",
-    "1 Хроник", "Первая книга Хроник"
+    "1 Паралипоменон",
+    "Первая книга Паралипоменон",
+    "1 Хроник",
+    "Первая книга Хроник"
   ],
   BibleBookEnum.secondChronicles: [
-    "2 Паралипоменон", "Вторая книга Паралипоменон",
-    "2 Хроник", "Вторая книга Хроник"
+    "2 Паралипоменон",
+    "Вторая книга Паралипоменон",
+    "2 Хроник",
+    "Вторая книга Хроник"
   ],
 
   // Ezra/Nehemiah/Esdras numbering in Russian Orthodox/Synodal tables:
@@ -70,8 +89,14 @@ const Map<BibleBookEnum, List<String>> russianBookNames = {
 
   // Epistles
   BibleBookEnum.romans: ["Римлянам", "Послание к Римлянам"],
-  BibleBookEnum.firstCorinthians: ["1 Коринфянам", "Первое послание к Коринфянам"],
-  BibleBookEnum.secondCorinthians: ["2 Коринфянам", "Второе послание к Коринфянам"],
+  BibleBookEnum.firstCorinthians: [
+    "1 Коринфянам",
+    "Первое послание к Коринфянам"
+  ],
+  BibleBookEnum.secondCorinthians: [
+    "2 Коринфянам",
+    "Второе послание к Коринфянам"
+  ],
   BibleBookEnum.galatians: ["Галатам", "Послание к Галатам"],
   BibleBookEnum.ephesians: ["Ефесянам", "Послание к Ефесянам"],
   BibleBookEnum.philippians: ["Филиппийцам", "Послание к Филиппийцам"],
@@ -92,30 +117,60 @@ const Map<BibleBookEnum, List<String>> russianBookNames = {
   BibleBookEnum.thirdJohn: ["3 Иоанна", "Третье послание Иоанна"],
   BibleBookEnum.jude: ["Иуды", "Послание Иуды"],
 
-  BibleBookEnum.revelation: ["Откровение", "Откровение Иоанна Богослова", "Апокалипсис"],
+  BibleBookEnum.revelation: [
+    "Откровение",
+    "Откровение Иоанна Богослова",
+    "Апокалипсис"
+  ],
 
   // Deuterocanon / Apocrypha (common Russian names)
   BibleBookEnum.tobit: ["Товит", "Книга Товита"],
   BibleBookEnum.judith: ["Иудифь", "Книга Иудифи"],
   BibleBookEnum.wisdom: ["Премудрость Соломона", "Книга Премудрости Соломона"],
-  BibleBookEnum.sirach: ["Премудрость Иисуса, сына Сирахова", "Сирах", "Книга Сираха"],
+  BibleBookEnum.sirach: [
+    "Премудрость Иисуса, сына Сирахова",
+    "Сирах",
+    "Книга Сираха"
+  ],
   BibleBookEnum.baruch: ["Варух", "Книга Варуха"],
   BibleBookEnum.firstMaccabees: ["1 Маккавейская", "Первая книга Маккавейская"],
-  BibleBookEnum.secondMaccabees: ["2 Маккавейская", "Вторая книга Маккавейская"],
+  BibleBookEnum.secondMaccabees: [
+    "2 Маккавейская",
+    "Вторая книга Маккавейская"
+  ],
   BibleBookEnum.thirdMaccabees: ["3 Маккавейская", "Третья книга Маккавейская"],
-  BibleBookEnum.fourthMaccabees: ["4 Маккавейская", "Четвертая книга Маккавейская", "Четвёртая книга Маккавейская"],
+  BibleBookEnum.fourthMaccabees: [
+    "4 Маккавейская",
+    "Четвертая книга Маккавейская",
+    "Четвёртая книга Маккавейская"
+  ],
 
   // Additions / extras (highly variant; keep explicit Russian titles)
-  BibleBookEnum.estherAdditions: ["Есфирь (греческая)", "Есфирь (добавления)", "Есфирь (LXX)"],
-  BibleBookEnum.danielSongOfThree: ["Песнь трёх отроков", "Песнь трех отроков", "Молитва Азарии и песнь трёх отроков"],
+  BibleBookEnum.estherAdditions: [
+    "Есфирь (греческая)",
+    "Есфирь (добавления)",
+    "Есфирь (LXX)"
+  ],
+  BibleBookEnum.danielSongOfThree: [
+    "Песнь трёх отроков",
+    "Песнь трех отроков",
+    "Молитва Азарии и песнь трёх отроков"
+  ],
   BibleBookEnum.danielSusanna: ["Сусанна", "Даниил (Сусанна)"],
-  BibleBookEnum.danielBelAndTheDragon: ["Вил и дракон", "Бел и дракон", "Даниил (Вил и дракон)"],
+  BibleBookEnum.danielBelAndTheDragon: [
+    "Вил и дракон",
+    "Бел и дракон",
+    "Даниил (Вил и дракон)"
+  ],
 
   // Apocryphal Esdras in Russian Orthodox/Synodal naming
   BibleBookEnum.firstEsdras: ["2 Ездры", "Вторая книга Ездры"],
   BibleBookEnum.secondEsdras: ["3 Ездры", "Третья книга Ездры"],
 
-  BibleBookEnum.prayerOfManasseh: ["Молитва Манассии", "Молитва Манассии, царя Иудейского"],
+  BibleBookEnum.prayerOfManasseh: [
+    "Молитва Манассии",
+    "Молитва Манассии, царя Иудейского"
+  ],
   BibleBookEnum.psalm151: ["Псалом 151", "Псалтирь (Псалом 151)"],
 };
 

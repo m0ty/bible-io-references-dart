@@ -1,3 +1,24 @@
+## Unreleased
+
+### Added
+
+- Conventional `package:bible_io_references/bible_io_references.dart` entrypoint
+- Non-throwing `tryParse` and typed `ParseResult` APIs
+- Typed parse error classifications while preserving legacy string codes
+- Value equality, checked copying, comparison, and JSON round-tripping
+- Localized long/short reference formatting and supported-language introspection
+- Published CLI executable with language/text/JSON options and a package example
+- Linux and Windows CI for formatting, analysis, and the full test suite
+
+### Fixed
+
+- Cross-book ranges are now recognized by `Reference.parse`
+- Empty input has a dedicated `empty_reference` diagnostic
+- Horizontal-bar range separators are supported
+- Pathological chapter and verse numbers are rejected by broad sanity limits
+- Previously undiscovered property, integration, concurrency, and benchmark tests now run by default
+- Ambiguous two-character Arabic aliases no longer silently select different books
+
 ## 1.0.0
 
 ### 🎉 Initial Release

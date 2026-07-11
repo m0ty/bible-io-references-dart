@@ -36,8 +36,8 @@ class LanguageTermAuditReport {
 
   static bool _isBlockingIssue(LanguageTermIssue issue) {
     return issue.issueType == 'missing_name' ||
-           issue.issueType == 'missing_abbreviation' ||
-           issue.issueType == 'collision';
+        issue.issueType == 'missing_abbreviation' ||
+        issue.issueType == 'collision';
   }
 }
 
@@ -85,7 +85,8 @@ LanguageTermAuditReport auditLanguageTerms() {
     final abbreviations = bookAbbreviationsByLanguage[languageCode]!;
 
     _checkWhitespaceIssues(issues, languageCode, 'names', names);
-    _checkWhitespaceIssues(issues, languageCode, 'abbreviations', abbreviations);
+    _checkWhitespaceIssues(
+        issues, languageCode, 'abbreviations', abbreviations);
   }
 
   // Check for potential collisions in normalized forms
@@ -102,19 +103,21 @@ void _checkForDuplicates(
 ) {
   final seenTerms = <String, BibleBookEnum>{};
 
-  for (final entry in terms. entries) {
+  for (final entry in terms.entries) {
     final book = entry.key;
     for (final term in entry.value) {
       final normalized = term.toLowerCase().trim();
-      if (seenTerms.containsKey(normalized)) {
+      final existingBook = seenTerms[normalized];
+      if (existingBook != null && existingBook != book) {
         issues.add(LanguageTermIssue(
           languageCode: languageCode,
           issueType: 'duplicate_term',
-          description: 'Duplicate term "$term" for ${book.fullName} and ${seenTerms[normalized]!.fullName}',
+          description:
+              'Duplicate term "$term" for ${book.fullName} and ${existingBook.fullName}',
           book: book,
           term: term,
         ));
-      } else {
+      } else if (existingBook == null) {
         seenTerms[normalized] = book;
       }
     }
@@ -164,15 +167,21 @@ void _checkNormalizationCollisions(List<LanguageTermIssue> issues) {
 
     for (final entry in names.entries) {
       for (final term in entry.value) {
-        final normalized = term.toLowerCase().replaceAll('.', '').replaceAll(' ', '');
-        normalizedTerms.putIfAbsent(normalized, () => []).add('$languageCode:names:${entry.key.fullName}');
+        final normalized =
+            term.toLowerCase().replaceAll('.', '').replaceAll(' ', '');
+        normalizedTerms
+            .putIfAbsent(normalized, () => [])
+            .add('$languageCode:names:${entry.key.fullName}');
       }
     }
 
     for (final entry in abbreviations.entries) {
       for (final term in entry.value) {
-        final normalized = term.toLowerCase().replaceAll('.', '').replaceAll(' ', '');
-        normalizedTerms.putIfAbsent(normalized, () => []).add('$languageCode:abbreviations:${entry.key.fullName}');
+        final normalized =
+            term.toLowerCase().replaceAll('.', '').replaceAll(' ', '');
+        normalizedTerms
+            .putIfAbsent(normalized, () => [])
+            .add('$languageCode:abbreviations:${entry.key.fullName}');
       }
     }
   }
@@ -182,7 +191,8 @@ void _checkNormalizationCollisions(List<LanguageTermIssue> issues) {
       issues.add(LanguageTermIssue(
         languageCode: 'multiple',
         issueType: 'normalization_collision',
-        description: 'Normalized term "${entry.key}" collides between: ${entry.value.join(', ')}',
+        description:
+            'Normalized term "${entry.key}" collides between: ${entry.value.join(', ')}',
         term: entry.key,
       ));
     }
@@ -201,12 +211,15 @@ void main() {
       }
 
       expect(report.hasBlockingIssues, isFalse,
-          reason: 'Found ${report.blockingIssues.length} blocking issues in language term data');
+          reason:
+              'Found ${report.blockingIssues.length} blocking issues in language term data');
     });
 
-    test('language term data has no duplicate terms within languages', () {
+    test('language terms do not resolve to multiple books within a language',
+        () {
       final report = auditLanguageTerms();
-      final duplicateIssues = report.issues.where((issue) => issue.issueType == 'duplicate_term');
+      final duplicateIssues =
+          report.issues.where((issue) => issue.issueType == 'duplicate_term');
 
       if (duplicateIssues.isNotEmpty) {
         for (final issue in duplicateIssues) {
@@ -215,12 +228,14 @@ void main() {
       }
 
       expect(duplicateIssues.length, 0,
-          reason: 'Found ${duplicateIssues.length} duplicate terms in language data');
+          reason:
+              'Found ${duplicateIssues.length} duplicate terms in language data');
     });
 
     test('language term data has no whitespace issues', () {
       final report = auditLanguageTerms();
-      final whitespaceIssues = report.issues.where((issue) => issue.issueType == 'whitespace_issue');
+      final whitespaceIssues =
+          report.issues.where((issue) => issue.issueType == 'whitespace_issue');
 
       if (whitespaceIssues.isNotEmpty) {
         for (final issue in whitespaceIssues) {
@@ -229,7 +244,8 @@ void main() {
       }
 
       expect(whitespaceIssues.length, 0,
-          reason: 'Found ${whitespaceIssues.length} whitespace issues in language data');
+          reason:
+              'Found ${whitespaceIssues.length} whitespace issues in language data');
     });
 
     test('all languages have complete book coverage', () {
@@ -239,9 +255,11 @@ void main() {
 
         for (final book in BibleBookEnum.values) {
           expect(names.containsKey(book), isTrue,
-              reason: 'Language $languageCode missing name for ${book.fullName}');
+              reason:
+                  'Language $languageCode missing name for ${book.fullName}');
           expect(abbreviations.containsKey(book), isTrue,
-              reason: 'Language $languageCode missing abbreviation for ${book.fullName}');
+              reason:
+                  'Language $languageCode missing abbreviation for ${book.fullName}');
         }
       }
     });

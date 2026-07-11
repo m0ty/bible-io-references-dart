@@ -10,10 +10,13 @@ A comprehensive Dart library for parsing Bible verse references into structured 
 - ✅ **Single verse parsing**: `John 3:16`, `jo 3:16` (abbreviations)
 - ✅ **Verse range parsing**: `John 3:16-17`, `John 3:16-4:1`, `John 3:16-Acts 1:2`
 - ✅ **Flexible formatting**: Supports `:`, `.` separators and various dash types (`-`, `–`, `—`)
-- ✅ **Multi-language support**: English, Spanish, French, German, Hebrew, Hindi, Indonesian, Korean, Portuguese, Russian, Tagalog
+- ✅ **Multi-language support**: English plus 12 localized language packs
 - ✅ **Auto language detection**: Intelligently handles language precedence and collisions
-- ✅ **Immutable data structures**: Thread-safe and performant
+- ✅ **Immutable value objects**: Equality, stable hashes, and checked copies
 - ✅ **Comprehensive error handling**: Detailed error codes and diagnostics
+- ✅ **Non-throwing parsing**: Nullable and typed-result APIs for user input
+- ✅ **Localized formatting**: Long or abbreviated book names in supported languages
+- ✅ **Value semantics and JSON**: Equality, checked copies, and serialization
 - ✅ **Zero dependencies**: Pure Dart implementation
 
 ## Installation
@@ -25,7 +28,7 @@ dart pub add bible_io_references
 ## Quick Start
 
 ```dart
-import 'package:bible_io_references/package.dart';
+import 'package:bible_io_references/bible_io_references.dart';
 
 void main() {
   // Parse a single verse
@@ -61,33 +64,74 @@ void main() {
 
 ```dart
 // Direct parsing to specific types
-VerseRef verse = VerseRef.parse("John 3:16");
-VerseRangeRef range = VerseRangeRef.parse("John 3:16-17");
+final verse = VerseRef.parse("John 3:16");
+final range = VerseRangeRef.parse("John 3:16-17");
 
 // Flexible parsing (returns Reference union)
-Reference any = Reference.parse("John 3:16"); // VerseRef
-Reference any = Reference.parse("John 3:16-17"); // VerseRangeRef
+final single = Reference.parse("John 3:16"); // VerseRef
+final passage = Reference.parse("John 3:16-17"); // VerseRangeRef
+
+// Non-throwing alternatives
+const userInput = "John 3:16";
+final optional = Reference.tryParse(userInput);
+final result = Reference.parseResult(userInput);
 
 // Legacy parsing functions (still available)
-VerseRef verse = verseRefFromStr("John 3:16");
-VerseRangeRef range = verseRangeRefFromStr("John 3:16-17");
+final legacyVerse = verseRefFromStr("John 3:16");
+final legacyRange = verseRangeRefFromStr("John 3:16-17");
 ```
 
 ### Language Support
 
 ```dart
 // Auto language detection (default)
-final ref = VerseRef.parse("Juan 3:16"); // Detects Spanish
+final detected = VerseRef.parse("Juan 3:16"); // Detects Spanish
 
 // Explicit language specification
-final ref = VerseRef.parse("Juan 3:16", language: BibleLanguageEnum.spanish);
+final spanish = VerseRef.parse(
+  "Juan 3:16",
+  language: BibleLanguageEnum.spanish,
+);
 
 // Language from string
-final ref = VerseRef.parse("Juan 3:16", language: BibleLanguageEnum.fromStr("es"));
+final fromCode = VerseRef.parse(
+  "Juan 3:16",
+  language: BibleLanguageEnum.fromStr("es"),
+);
+```
+
+### Localized Formatting
+
+```dart
+final ref = Reference.parse('Juan 3:16', language: BibleLanguageEnum.spanish);
+
+print(ref.format(language: BibleLanguageEnum.spanish));
+// Juan 3:16
+
+print(ref.format(
+  language: BibleLanguageEnum.spanish,
+  bookNameStyle: ReferenceBookNameStyle.short,
+));
+// Jn 3:16
+
+print(BibleLanguageEnum.spanish.isParsingSupported); // true
+print(BibleLanguageEnum.greek.isParsingSupported);   // false
+```
+
+### Value Objects and JSON
+
+```dart
+final verse = VerseRef.parse('John 3:16');
+final nextVerse = verse.copyWith(verse: 17);
+
+final json = nextVerse.toJson();
+final restored = Reference.fromJson(json);
+print(restored == nextVerse); // true
 ```
 
 ### Supported Languages
 
+- **Arabic** (ar) - Complete support
 - **English** (en) - Complete support
 - **Spanish** (es) - Complete support
 - **French** (fr) - Complete support
@@ -100,6 +144,10 @@ final ref = VerseRef.parse("Juan 3:16", language: BibleLanguageEnum.fromStr("es"
 - **Hindi** (hi) - Complete support
 - **Indonesian** (id) - Complete support
 - **Tagalog** (tl) - Complete support
+
+Use `language.isParsingSupported` or `supportedParsingLanguages` before
+offering a language in user-facing controls. Some enum identifiers are reserved
+for future language packs but do not yet have parsing data.
 
 ## Advanced Usage
 
@@ -144,19 +192,25 @@ print(ref.book); // BibleBookEnum.judges
 
 ```bash
 # Parse a reference from command line
-dart run bin/package.dart "John 3:16"
-# Output: Parsed as single verse: John 3:16
+dart run bible_io_references "John 3:16"
+# Output: John 3:16
 
-dart run bin/package.dart "John 3:16-17"
-# Output: Parsed as range: John 3:16-17
+dart run bible_io_references "John 3:16-17"
+# Output: John 3:16-17
+
+dart run bible_io_references --language es "Juan 3:16"
+# Output: Juan 3:16
+
+dart run bible_io_references --format json "John 3:16"
+# Output: {"type":"verse","book":"jo","chapter":3,"verse":16}
 ```
 
 ## Performance
 
-- **Fast parsing**: < 1ms per reference on modern hardware
-- **Memory efficient**: No external allocations during parsing
-- **Thread safe**: All parsing operations are stateless
-- **Zero-copy**: String processing without unnecessary copying
+- **Fast parsing**: Cached book lookups keep repeated parsing inexpensive
+- **Stateless API**: Parse operations do not mutate shared parser state
+- **Small footprint**: No runtime package dependencies
+- **Benchmarked**: Performance checks are isolated behind the `performance` tag
 
 ## Testing
 

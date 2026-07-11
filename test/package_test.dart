@@ -112,50 +112,75 @@ void main() {
 
     test('auto language precedence order', () {
       expect(autoLanguagePrecedence, [
-        'ar', 'zh', 'fr', 'de', 'he', 'hi', 'id', 'ko', 'pt', 'ru', 'es', 'tl'
+        'ar',
+        'zh',
+        'fr',
+        'de',
+        'he',
+        'hi',
+        'id',
+        'ko',
+        'pt',
+        'ru',
+        'es',
+        'tl'
       ]);
     });
 
     test('auto language collision metadata', () {
       expect(autoLanguageCollisions.containsKey('jn'), isTrue);
       expect(autoLanguageCollisions.containsKey('jud'), isTrue);
-      expect(autoLanguageCollisions['jn']!.contains(BibleBookEnum.john), isTrue);
-      expect(autoLanguageCollisions['jn']!.contains(BibleBookEnum.jonah), isTrue);
+      expect(
+          autoLanguageCollisions['jn']!.contains(BibleBookEnum.john), isTrue);
+      expect(
+          autoLanguageCollisions['jn']!.contains(BibleBookEnum.jonah), isTrue);
     });
   });
 
   group('Error handling', () {
     test('parse invalid reference raises error', () {
-      expect(() => verseRefFromStr('NotABook 3:16'), throwsA(isA<ParseVerseRefError>()));
+      expect(() => verseRefFromStr('NotABook 3:16'),
+          throwsA(isA<ParseVerseRefError>()));
     });
 
     test('parse non-positive chapter raises error', () {
-      expect(() => verseRefFromStr('John 0:1'), throwsA(isA<ParseVerseRefError>()));
-      expect(() => verseRefFromStr('John -1:1'), throwsA(isA<ParseVerseRefError>()));
+      expect(() => verseRefFromStr('John 0:1'),
+          throwsA(isA<ParseVerseRefError>()));
+      expect(() => verseRefFromStr('John -1:1'),
+          throwsA(isA<ParseVerseRefError>()));
     });
 
     test('parse non-positive verse raises error', () {
-      expect(() => verseRefFromStr('John 1:0'), throwsA(isA<ParseVerseRefError>()));
-      expect(() => verseRefFromStr('John 1:-1'), throwsA(isA<ParseVerseRefError>()));
+      expect(() => verseRefFromStr('John 1:0'),
+          throwsA(isA<ParseVerseRefError>()));
+      expect(() => verseRefFromStr('John 1:-1'),
+          throwsA(isA<ParseVerseRefError>()));
     });
 
     test('parse range with invalid start raises error', () {
-      expect(() => verseRangeRefFromStr('NotABook 3:16-17'), throwsA(isA<ParseVerseRefError>()));
+      expect(() => verseRangeRefFromStr('NotABook 3:16-17'),
+          throwsA(isA<ParseVerseRefError>()));
     });
 
     test('parse range with invalid end raises error', () {
-      expect(() => verseRangeRefFromStr('John 3:16-NotABook 1:1'), throwsA(isA<ParseVerseRefError>()));
+      expect(() => verseRangeRefFromStr('John 3:16-NotABook 1:1'),
+          throwsA(isA<ParseVerseRefError>()));
     });
 
     test('parse range with non-positive numbers raises error', () {
-      expect(() => verseRangeRefFromStr('John 0:1-2'), throwsA(isA<ParseVerseRefError>()));
-      expect(() => verseRangeRefFromStr('John 1:0-2'), throwsA(isA<ParseVerseRefError>()));
-      expect(() => verseRangeRefFromStr('John 1:1-0'), throwsA(isA<ParseVerseRefError>()));
+      expect(() => verseRangeRefFromStr('John 0:1-2'),
+          throwsA(isA<ParseVerseRefError>()));
+      expect(() => verseRangeRefFromStr('John 1:0-2'),
+          throwsA(isA<ParseVerseRefError>()));
+      expect(() => verseRangeRefFromStr('John 1:1-0'),
+          throwsA(isA<ParseVerseRefError>()));
     });
 
     test('parse range end before start raises error', () {
-      expect(() => verseRangeRefFromStr('John 3:17-16'), throwsA(isA<ParseVerseRefError>()));
-      expect(() => verseRangeRefFromStr('John 3:16-3:16'), throwsA(isA<ParseVerseRefError>()));
+      expect(() => verseRangeRefFromStr('John 3:17-16'),
+          throwsA(isA<ParseVerseRefError>()));
+      expect(() => verseRangeRefFromStr('John 3:16-3:16'),
+          throwsA(isA<ParseVerseRefError>()));
     });
 
     test('parse error includes diagnostics', () {
@@ -188,14 +213,16 @@ void main() {
 
   group('Language-specific parsing', () {
     test('parse Spanish reference', () {
-      final ref = verseRefFromStr('Juan 3:16', language: BibleLanguageEnum.spanish);
+      final ref =
+          verseRefFromStr('Juan 3:16', language: BibleLanguageEnum.spanish);
       expect(ref.book, BibleBookEnum.john);
       expect(ref.chapter, 3);
       expect(ref.verse, 16);
     });
 
     test('parse Spanish range', () {
-      final ref = verseRangeRefFromStr('Juan 3:16-17', language: BibleLanguageEnum.spanish);
+      final ref = verseRangeRefFromStr('Juan 3:16-17',
+          language: BibleLanguageEnum.spanish);
       expect(ref.start.book, BibleBookEnum.john);
       expect(ref.start.chapter, 3);
       expect(ref.start.verse, 16);
@@ -240,15 +267,18 @@ void main() {
   group('Immutability', () {
     test('VerseRef is immutable', () {
       final ref = verseRefFromStr('John 3:16');
-      expect(() => (ref as dynamic).book = BibleBookEnum.matthew, throwsA(anything));
+      expect(() => (ref as dynamic).book = BibleBookEnum.matthew,
+          throwsA(anything));
       expect(() => (ref as dynamic).chapter = 4, throwsA(anything));
       expect(() => (ref as dynamic).verse = 17, throwsA(anything));
     });
 
     test('VerseRangeRef is immutable', () {
       final ref = verseRangeRefFromStr('John 3:16-17');
-      expect(() => (ref as dynamic).start = verseRefFromStr('Matt 1:1'), throwsA(anything));
-      expect(() => (ref as dynamic).end = verseRefFromStr('Matt 1:2'), throwsA(anything));
+      expect(() => (ref as dynamic).start = verseRefFromStr('Matt 1:1'),
+          throwsA(anything));
+      expect(() => (ref as dynamic).end = verseRefFromStr('Matt 1:2'),
+          throwsA(anything));
     });
   });
 }

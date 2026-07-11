@@ -106,8 +106,25 @@ const Map<BibleBookEnum, List<String>> koreanBookAbbreviations = {
   BibleBookEnum.joshua: ['수', '여호', 'jos', 'JOS', 'Josh'],
   BibleBookEnum.judges: ['삿', '판관', 'jdg', 'JDG', 'Judg'],
   BibleBookEnum.ruth: ['룻', 'rut', 'RUT', 'Ruth'],
-  BibleBookEnum.firstSamuel: ['삼상', '1사무', '1사무엘', '1 사무', '1sa', '1SA', '1Sam', '1Sam'],
-  BibleBookEnum.secondSamuel: ['삼하', '2사무', '2사무엘', '2 사무', '2sa', '2SA', '2Sam'],
+  BibleBookEnum.firstSamuel: [
+    '삼상',
+    '1사무',
+    '1사무엘',
+    '1 사무',
+    '1sa',
+    '1SA',
+    '1Sam',
+    '1Sam'
+  ],
+  BibleBookEnum.secondSamuel: [
+    '삼하',
+    '2사무',
+    '2사무엘',
+    '2 사무',
+    '2sa',
+    '2SA',
+    '2Sam'
+  ],
   BibleBookEnum.firstKings: ['왕상', '1열왕', '1 열왕', '1ki', '1KI', '1Kgs'],
   BibleBookEnum.secondKings: ['왕하', '2열왕', '2 열왕', '2ki', '2KI', '2Kgs'],
   BibleBookEnum.firstChronicles: ['대상', '1역대', '1 역대', '1ch', '1CH', '1Chr'],
@@ -151,8 +168,22 @@ const Map<BibleBookEnum, List<String>> koreanBookAbbreviations = {
   BibleBookEnum.ephesians: ['엡', '에페', 'eph', 'EPH', 'Eph'],
   BibleBookEnum.philippians: ['빌', '필립', '필리', 'php', 'PHP', 'Phil'],
   BibleBookEnum.colossians: ['골', '골로', '콜로', 'col', 'COL', 'Col'],
-  BibleBookEnum.firstThessalonians: ['살전', '1데살', '1테살', '1th', '1TH', '1Thess'],
-  BibleBookEnum.secondThessalonians: ['살후', '2데살', '2테살', '2th', '2TH', '2Thess'],
+  BibleBookEnum.firstThessalonians: [
+    '살전',
+    '1데살',
+    '1테살',
+    '1th',
+    '1TH',
+    '1Thess'
+  ],
+  BibleBookEnum.secondThessalonians: [
+    '살후',
+    '2데살',
+    '2테살',
+    '2th',
+    '2TH',
+    '2Thess'
+  ],
   BibleBookEnum.firstTimothy: ['딤전', '1디모', '1티모', '1ti', '1TI', '1Tim'],
   BibleBookEnum.secondTimothy: ['딤후', '2디모', '2티모', '2ti', '2TI', '2Tim'],
   BibleBookEnum.titus: ['딛', '디도', '티토', 'tit', 'TIT', 'Titus'],

@@ -11,19 +11,47 @@ const Map<BibleBookEnum, List<String>> spanishBookNames = {
   BibleBookEnum.judges: ['Jueces'],
   BibleBookEnum.ruth: ['Rut'],
   BibleBookEnum.firstSamuel: ['1 Samuel', '1º Samuel', '1° Samuel', 'I Samuel'],
-  BibleBookEnum.secondSamuel: ['2 Samuel', '2º Samuel', '2° Samuel', 'II Samuel'],
+  BibleBookEnum.secondSamuel: [
+    '2 Samuel',
+    '2º Samuel',
+    '2° Samuel',
+    'II Samuel'
+  ],
   BibleBookEnum.firstKings: ['1 Reyes', '1º Reyes', '1° Reyes', 'I Reyes'],
   BibleBookEnum.secondKings: ['2 Reyes', '2º Reyes', '2° Reyes', 'II Reyes'],
-  BibleBookEnum.firstChronicles: ['1 Crónicas', '1 Cronicas', '1º Crónicas', '1° Crónicas', 'I Crónicas'],
-  BibleBookEnum.secondChronicles: ['2 Crónicas', '2 Cronicas', '2º Crónicas', '2° Crónicas', 'II Crónicas'],
+  BibleBookEnum.firstChronicles: [
+    '1 Crónicas',
+    '1 Cronicas',
+    '1º Crónicas',
+    '1° Crónicas',
+    'I Crónicas'
+  ],
+  BibleBookEnum.secondChronicles: [
+    '2 Crónicas',
+    '2 Cronicas',
+    '2º Crónicas',
+    '2° Crónicas',
+    'II Crónicas'
+  ],
   BibleBookEnum.ezra: ['Esdrás', 'Esdras', 'Ezra'],
   BibleBookEnum.nehemiah: ['Nehemías', 'Nehemias'],
   BibleBookEnum.esther: ['Ester', 'Esther'],
   BibleBookEnum.job: ['Job'],
   BibleBookEnum.psalms: ['Salmos', 'Salmo'],
   BibleBookEnum.proverbs: ['Proverbios'],
-  BibleBookEnum.ecclesiastes: ['Eclesiastés', 'Eclesiastes', 'Qohelet', 'Qoélet', 'Coelet'],
-  BibleBookEnum.songOfSolomon: ['Cantar de los cantares', 'Cantar de los Cantares', 'Cantares', 'Cantar'],
+  BibleBookEnum.ecclesiastes: [
+    'Eclesiastés',
+    'Eclesiastes',
+    'Qohelet',
+    'Qoélet',
+    'Coelet'
+  ],
+  BibleBookEnum.songOfSolomon: [
+    'Cantar de los cantares',
+    'Cantar de los Cantares',
+    'Cantares',
+    'Cantar'
+  ],
   BibleBookEnum.isaiah: ['Isaías', 'Isaias'],
   BibleBookEnum.jeremiah: ['Jeremías', 'Jeremias'],
   BibleBookEnum.lamentations: ['Lamentaciones'],
@@ -45,16 +73,38 @@ const Map<BibleBookEnum, List<String>> spanishBookNames = {
   BibleBookEnum.mark: ['Marcos'],
   BibleBookEnum.luke: ['Lucas'],
   BibleBookEnum.john: ['Juan'],
-  BibleBookEnum.acts: ['Hechos', 'Hechos de los apóstoles', 'Hechos de los Apóstoles'],
+  BibleBookEnum.acts: [
+    'Hechos',
+    'Hechos de los apóstoles',
+    'Hechos de los Apóstoles'
+  ],
   BibleBookEnum.romans: ['Romanos'],
-  BibleBookEnum.firstCorinthians: ['1 Corintios', '1º Corintios', '1° Corintios', 'I Corintios'],
-  BibleBookEnum.secondCorinthians: ['2 Corintios', '2º Corintios', '2° Corintios', 'II Corintios'],
+  BibleBookEnum.firstCorinthians: [
+    '1 Corintios',
+    '1º Corintios',
+    '1° Corintios',
+    'I Corintios'
+  ],
+  BibleBookEnum.secondCorinthians: [
+    '2 Corintios',
+    '2º Corintios',
+    '2° Corintios',
+    'II Corintios'
+  ],
   BibleBookEnum.galatians: ['Gálatas', 'Galatas'],
   BibleBookEnum.ephesians: ['Efesios'],
   BibleBookEnum.philippians: ['Filipenses'],
   BibleBookEnum.colossians: ['Colosenses'],
-  BibleBookEnum.firstThessalonians: ['1 Tesalonicenses', '1º Tesalonicenses', '1° Tesalonicenses'],
-  BibleBookEnum.secondThessalonians: ['2 Tesalonicenses', '2º Tesalonicenses', '2° Tesalonicenses'],
+  BibleBookEnum.firstThessalonians: [
+    '1 Tesalonicenses',
+    '1º Tesalonicenses',
+    '1° Tesalonicenses'
+  ],
+  BibleBookEnum.secondThessalonians: [
+    '2 Tesalonicenses',
+    '2º Tesalonicenses',
+    '2° Tesalonicenses'
+  ],
   BibleBookEnum.firstTimothy: ['1 Timoteo', '1º Timoteo', '1° Timoteo'],
   BibleBookEnum.secondTimothy: ['2 Timoteo', '2º Timoteo', '2° Timoteo'],
   BibleBookEnum.titus: ['Tito'],
@@ -70,17 +120,42 @@ const Map<BibleBookEnum, List<String>> spanishBookNames = {
   BibleBookEnum.revelation: ['Apocalipsis', 'Apocalipsis de Juan'],
   BibleBookEnum.tobit: ['Tobías', 'Tobias', 'Tobit'],
   BibleBookEnum.judith: ['Judit', 'Judith'],
-  BibleBookEnum.wisdom: ['Sabiduría', 'Sabiduria', 'Sabiduría de Salomón', 'Sabiduria de Salomon'],
-  BibleBookEnum.sirach: ['Eclesiástico', 'Eclesiastico', 'Sirácida', 'Siracida'],
+  BibleBookEnum.wisdom: [
+    'Sabiduría',
+    'Sabiduria',
+    'Sabiduría de Salomón',
+    'Sabiduria de Salomon'
+  ],
+  BibleBookEnum.sirach: [
+    'Eclesiástico',
+    'Eclesiastico',
+    'Sirácida',
+    'Siracida'
+  ],
   BibleBookEnum.baruch: ['Baruc', 'Baruch'],
   BibleBookEnum.firstMaccabees: ['1 Macabeos', '1º Macabeos', '1° Macabeos'],
   BibleBookEnum.secondMaccabees: ['2 Macabeos', '2º Macabeos', '2° Macabeos'],
   BibleBookEnum.thirdMaccabees: ['3 Macabeos', '3º Macabeos', '3° Macabeos'],
   BibleBookEnum.fourthMaccabees: ['4 Macabeos', '4º Macabeos', '4° Macabeos'],
-  BibleBookEnum.estherAdditions: ['Ester (griego)', 'Ester (Griego)', 'Ester griego'],
-  BibleBookEnum.danielSongOfThree: ['Oración de Azarías', 'Oracion de Azarias', 'Cántico de los tres jóvenes', 'Cantico de los tres jovenes', 'Oración de Azarías y el Cántico de los tres jóvenes', 'Oracion de Azarias y el Cantico de los tres jovenes'],
+  BibleBookEnum.estherAdditions: [
+    'Ester (griego)',
+    'Ester (Griego)',
+    'Ester griego'
+  ],
+  BibleBookEnum.danielSongOfThree: [
+    'Oración de Azarías',
+    'Oracion de Azarias',
+    'Cántico de los tres jóvenes',
+    'Cantico de los tres jovenes',
+    'Oración de Azarías y el Cántico de los tres jóvenes',
+    'Oracion de Azarias y el Cantico de los tres jovenes'
+  ],
   BibleBookEnum.danielSusanna: ['Susana'],
-  BibleBookEnum.danielBelAndTheDragon: ['Bel y el dragón', 'Bel y el dragon', 'Bel y la serpiente'],
+  BibleBookEnum.danielBelAndTheDragon: [
+    'Bel y el dragón',
+    'Bel y el dragon',
+    'Bel y la serpiente'
+  ],
   BibleBookEnum.firstEsdras: ['1 Esdras'],
   BibleBookEnum.secondEsdras: ['2 Esdras'],
   BibleBookEnum.prayerOfManasseh: ['Oración de Manasés', 'Oracion de Manases'],
@@ -97,20 +172,86 @@ const Map<BibleBookEnum, List<String>> spanishBookAbbreviations = {
   BibleBookEnum.joshua: ['Jos', 'jos', 'JOS'],
   BibleBookEnum.judges: ['Jue', 'jue', 'Jc', 'jc', 'JDG'],
   BibleBookEnum.ruth: ['Rt', 'rt', 'Rut', 'rut', 'RUT'],
-  BibleBookEnum.firstSamuel: ['1S', '1 S', '1Sam', '1 Sam', '1Sm', '1 Sm', '1SA'],
-  BibleBookEnum.secondSamuel: ['2S', '2 S', '2Sam', '2 Sam', '2Sm', '2 Sm', '2SA'],
-  BibleBookEnum.firstKings: ['1R', '1 R', '1Re', '1 Re', '1Rey', '1 Rey', '1KI', '1Kgs'],
-  BibleBookEnum.secondKings: ['2R', '2 R', '2Re', '2 Re', '2Rey', '2 Rey', '2KI', '2Kgs'],
-  BibleBookEnum.firstChronicles: ['1Cr', '1 Cr', '1Cro', '1 Cro', '1CH', '1Chr'],
-  BibleBookEnum.secondChronicles: ['2Cr', '2 Cr', '2Cro', '2 Cro', '2CH', '2Chr'],
+  BibleBookEnum.firstSamuel: [
+    '1S',
+    '1 S',
+    '1Sam',
+    '1 Sam',
+    '1Sm',
+    '1 Sm',
+    '1SA'
+  ],
+  BibleBookEnum.secondSamuel: [
+    '2S',
+    '2 S',
+    '2Sam',
+    '2 Sam',
+    '2Sm',
+    '2 Sm',
+    '2SA'
+  ],
+  BibleBookEnum.firstKings: [
+    '1R',
+    '1 R',
+    '1Re',
+    '1 Re',
+    '1Rey',
+    '1 Rey',
+    '1KI',
+    '1Kgs'
+  ],
+  BibleBookEnum.secondKings: [
+    '2R',
+    '2 R',
+    '2Re',
+    '2 Re',
+    '2Rey',
+    '2 Rey',
+    '2KI',
+    '2Kgs'
+  ],
+  BibleBookEnum.firstChronicles: [
+    '1Cr',
+    '1 Cr',
+    '1Cro',
+    '1 Cro',
+    '1CH',
+    '1Chr'
+  ],
+  BibleBookEnum.secondChronicles: [
+    '2Cr',
+    '2 Cr',
+    '2Cro',
+    '2 Cro',
+    '2CH',
+    '2Chr'
+  ],
   BibleBookEnum.ezra: ['Esd', 'esd', 'EZR', 'Ezr'],
   BibleBookEnum.nehemiah: ['Neh', 'neh', 'Ne', 'ne', 'NEH'],
   BibleBookEnum.esther: ['Est', 'est', 'EST'],
   BibleBookEnum.job: ['Job', 'job', 'Jb', 'jb', 'JOB'],
   BibleBookEnum.psalms: ['Sal', 'sal', 'Sl', 'sl', 'PSA', 'Ps'],
   BibleBookEnum.proverbs: ['Pr', 'pr', 'Prov', 'prov', 'PRO'],
-  BibleBookEnum.ecclesiastes: ['Ec', 'ec', 'Qo', 'qo', 'Ecl', 'ecl', 'ECC', 'Eccl'],
-  BibleBookEnum.songOfSolomon: ['Cnt', 'cnt', 'Ct', 'ct', 'Cant', 'cant', 'SNG', 'Song'],
+  BibleBookEnum.ecclesiastes: [
+    'Ec',
+    'ec',
+    'Qo',
+    'qo',
+    'Ecl',
+    'ecl',
+    'ECC',
+    'Eccl'
+  ],
+  BibleBookEnum.songOfSolomon: [
+    'Cnt',
+    'cnt',
+    'Ct',
+    'ct',
+    'Cant',
+    'cant',
+    'SNG',
+    'Song'
+  ],
   BibleBookEnum.isaiah: ['Is', 'is', 'ISA', 'Isa'],
   BibleBookEnum.jeremiah: ['Jer', 'jer', 'Jr', 'jr', 'JER'],
   BibleBookEnum.lamentations: ['Lm', 'lm', 'LAM', 'Lam'],
@@ -134,20 +275,77 @@ const Map<BibleBookEnum, List<String>> spanishBookAbbreviations = {
   BibleBookEnum.john: ['Jn', 'jn', 'Juan', 'juan', 'JHN', 'John'],
   BibleBookEnum.acts: ['Hch', 'hch', 'Hech', 'hech', 'ACT', 'Acts'],
   BibleBookEnum.romans: ['Rm', 'rm', 'Ro', 'ro', 'Rom', 'rom', 'ROM'],
-  BibleBookEnum.firstCorinthians: ['1Co', '1 Co', '1Cor', '1 Cor', '1CO', '1Cor'],
-  BibleBookEnum.secondCorinthians: ['2Co', '2 Co', '2Cor', '2 Cor', '2CO', '2Cor'],
+  BibleBookEnum.firstCorinthians: [
+    '1Co',
+    '1 Co',
+    '1Cor',
+    '1 Cor',
+    '1CO',
+    '1Cor'
+  ],
+  BibleBookEnum.secondCorinthians: [
+    '2Co',
+    '2 Co',
+    '2Cor',
+    '2 Cor',
+    '2CO',
+    '2Cor'
+  ],
   BibleBookEnum.galatians: ['Gl', 'gl', 'Ga', 'ga', 'Gál', 'gál', 'GAL'],
   BibleBookEnum.ephesians: ['Ef', 'ef', 'Efes', 'efes', 'EPH'],
   BibleBookEnum.philippians: ['Flp', 'flp', 'Fil', 'fil', 'PHP', 'Phil'],
   BibleBookEnum.colossians: ['Col', 'col', 'COL'],
-  BibleBookEnum.firstThessalonians: ['1Ts', '1 Ts', '1Tes', '1 Tes', '1TH', '1Thess'],
-  BibleBookEnum.secondThessalonians: ['2Ts', '2 Ts', '2Tes', '2 Tes', '2TH', '2Thess'],
-  BibleBookEnum.firstTimothy: ['1Ti', '1 Ti', '1Tm', '1 Tm', '1Tim', '1 Tim', '1TI', '1Tim'],
-  BibleBookEnum.secondTimothy: ['2Ti', '2 Ti', '2Tm', '2 Tm', '2Tim', '2 Tim', '2TI', '2Tim'],
+  BibleBookEnum.firstThessalonians: [
+    '1Ts',
+    '1 Ts',
+    '1Tes',
+    '1 Tes',
+    '1TH',
+    '1Thess'
+  ],
+  BibleBookEnum.secondThessalonians: [
+    '2Ts',
+    '2 Ts',
+    '2Tes',
+    '2 Tes',
+    '2TH',
+    '2Thess'
+  ],
+  BibleBookEnum.firstTimothy: [
+    '1Ti',
+    '1 Ti',
+    '1Tm',
+    '1 Tm',
+    '1Tim',
+    '1 Tim',
+    '1TI',
+    '1Tim'
+  ],
+  BibleBookEnum.secondTimothy: [
+    '2Ti',
+    '2 Ti',
+    '2Tm',
+    '2 Tm',
+    '2Tim',
+    '2 Tim',
+    '2TI',
+    '2Tim'
+  ],
   BibleBookEnum.titus: ['Tit', 'tit', 'Tt', 'tt', 'TIT'],
   BibleBookEnum.philemon: ['Flm', 'flm', 'Filem', 'filem', 'PHM', 'Phlm'],
   BibleBookEnum.hebrews: ['Heb', 'heb', 'Hb', 'hb', 'HEB'],
-  BibleBookEnum.james: ['Stg', 'stg', 'St', 'st', 'Sant', 'sant', 'Stgo', 'stgo', 'JAS', 'Jas'],
+  BibleBookEnum.james: [
+    'Stg',
+    'stg',
+    'St',
+    'st',
+    'Sant',
+    'sant',
+    'Stgo',
+    'stgo',
+    'JAS',
+    'Jas'
+  ],
   BibleBookEnum.firstPeter: ['1P', '1 P', '1Pe', '1 Pe', '1PE', '1Pet'],
   BibleBookEnum.secondPeter: ['2P', '2 P', '2Pe', '2 Pe', '2PE', '2Pet'],
   BibleBookEnum.firstJohn: ['1Jn', '1 Jn', '1JN', '1John'],
@@ -168,8 +366,22 @@ const Map<BibleBookEnum, List<String>> spanishBookAbbreviations = {
   BibleBookEnum.danielSongOfThree: ['S3Y', 'PrAzar'],
   BibleBookEnum.danielSusanna: ['Sus', 'sus', 'SUS'],
   BibleBookEnum.danielBelAndTheDragon: ['Bel', 'bel', 'BEL'],
-  BibleBookEnum.firstEsdras: ['1ES', '1Esd', '1Esdras', '1 Esd', '3Esr', '3 Esr'],
-  BibleBookEnum.secondEsdras: ['2ES', '2Esd', '2Esdras', '2 Esd', '4Esr', '4 Esr'],
+  BibleBookEnum.firstEsdras: [
+    '1ES',
+    '1Esd',
+    '1Esdras',
+    '1 Esd',
+    '3Esr',
+    '3 Esr'
+  ],
+  BibleBookEnum.secondEsdras: [
+    '2ES',
+    '2Esd',
+    '2Esdras',
+    '2 Esd',
+    '4Esr',
+    '4 Esr'
+  ],
   BibleBookEnum.prayerOfManasseh: ['Man', 'man', 'MAN', 'PrMan'],
   BibleBookEnum.psalm151: ['Sal151', 'sal151', 'PS2', 'AddPs'],
 };

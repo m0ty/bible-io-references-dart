@@ -11,14 +11,34 @@ const Map<BibleBookEnum, List<String>> portugueseBookNames = {
   BibleBookEnum.judges: ["Juízes", "Juizes"],
   BibleBookEnum.ruth: ["Rute"],
 
-  BibleBookEnum.firstSamuel: ["1 Samuel", "1º Samuel", "I Samuel", "Primeiro Samuel"],
-  BibleBookEnum.secondSamuel: ["2 Samuel", "2º Samuel", "II Samuel", "Segundo Samuel"],
+  BibleBookEnum.firstSamuel: [
+    "1 Samuel",
+    "1º Samuel",
+    "I Samuel",
+    "Primeiro Samuel"
+  ],
+  BibleBookEnum.secondSamuel: [
+    "2 Samuel",
+    "2º Samuel",
+    "II Samuel",
+    "Segundo Samuel"
+  ],
 
   BibleBookEnum.firstKings: ["1 Reis", "1º Reis", "I Reis", "Primeiro Reis"],
   BibleBookEnum.secondKings: ["2 Reis", "2º Reis", "II Reis", "Segundo Reis"],
 
-  BibleBookEnum.firstChronicles: ["1 Crônicas", "1 Cronicas", "1º Crônicas", "I Crônicas"],
-  BibleBookEnum.secondChronicles: ["2 Crônicas", "2 Cronicas", "2º Crônicas", "II Crônicas"],
+  BibleBookEnum.firstChronicles: [
+    "1 Crônicas",
+    "1 Cronicas",
+    "1º Crônicas",
+    "I Crônicas"
+  ],
+  BibleBookEnum.secondChronicles: [
+    "2 Crônicas",
+    "2 Cronicas",
+    "2º Crônicas",
+    "II Crônicas"
+  ],
 
   // Portuguese standard is Esdras; keep Ezra as permissive alias
   BibleBookEnum.ezra: ["Esdras", "Ezra"],
@@ -29,9 +49,13 @@ const Map<BibleBookEnum, List<String>> portugueseBookNames = {
   BibleBookEnum.proverbs: ["Provérbios", "Proverbios"],
   BibleBookEnum.ecclesiastes: ["Eclesiastes", "Coélet", "Coelet"],
   BibleBookEnum.songOfSolomon: [
-    "Cânticos", "Canticos",
-    "Cântico dos Cânticos", "Cantico dos Canticos",
-    "Cantares", "Cantares de Salomão", "Cantares de Salomao"
+    "Cânticos",
+    "Canticos",
+    "Cântico dos Cânticos",
+    "Cantico dos Canticos",
+    "Cantares",
+    "Cantares de Salomão",
+    "Cantares de Salomao"
   ],
 
   BibleBookEnum.isaiah: ["Isaías", "Isaias"],
@@ -67,7 +91,10 @@ const Map<BibleBookEnum, List<String>> portugueseBookNames = {
   BibleBookEnum.philippians: ["Filipenses"],
   BibleBookEnum.colossians: ["Colossenses"],
   BibleBookEnum.firstThessalonians: ["1 Tessalonicenses", "1º Tessalonicenses"],
-  BibleBookEnum.secondThessalonians: ["2 Tessalonicenses", "2º Tessalonicenses"],
+  BibleBookEnum.secondThessalonians: [
+    "2 Tessalonicenses",
+    "2º Tessalonicenses"
+  ],
   BibleBookEnum.firstTimothy: ["1 Timóteo", "1 Timoteo"],
   BibleBookEnum.secondTimothy: ["2 Timóteo", "2 Timoteo"],
   BibleBookEnum.titus: ["Tito"],
@@ -80,20 +107,39 @@ const Map<BibleBookEnum, List<String>> portugueseBookNames = {
   BibleBookEnum.secondJohn: ["2 João", "2 Joao", "2º João", "2º Joao"],
   BibleBookEnum.thirdJohn: ["3 João", "3 Joao", "3º João", "3º Joao"],
   BibleBookEnum.jude: ["Judas"],
-  BibleBookEnum.revelation: ["Apocalipse", "Apocalipse de João", "Apocalipse de Joao"],
+  BibleBookEnum.revelation: [
+    "Apocalipse",
+    "Apocalipse de João",
+    "Apocalipse de Joao"
+  ],
 
   // Deuterocanon / Apocrypha (Portuguese Catholic usage)
   BibleBookEnum.tobit: ["Tobias"],
   BibleBookEnum.judith: ["Judite"],
-  BibleBookEnum.wisdom: ["Sabedoria", "Sabedoria de Salomão", "Sabedoria de Salomao"],
-  BibleBookEnum.sirach: ["Eclesiástico", "Eclesiastico", "Sirácida", "Siracida", "Ben Sira"],
+  BibleBookEnum.wisdom: [
+    "Sabedoria",
+    "Sabedoria de Salomão",
+    "Sabedoria de Salomao"
+  ],
+  BibleBookEnum.sirach: [
+    "Eclesiástico",
+    "Eclesiastico",
+    "Sirácida",
+    "Siracida",
+    "Ben Sira"
+  ],
   BibleBookEnum.baruch: ["Baruc", "Baruque"],
   BibleBookEnum.firstMaccabees: ["1 Macabeus", "1º Macabeus"],
   BibleBookEnum.secondMaccabees: ["2 Macabeus", "2º Macabeus"],
 
   // Additions / extras (more variable; keep explicit Portuguese labels + common descriptors)
   BibleBookEnum.estherAdditions: ["Ester (grego)", "Ester Grego", "Ester Gr"],
-  BibleBookEnum.danielSongOfThree: ["Oração de Azarias", "Oracao de Azarias", "Cântico dos Três Jovens", "Cantico dos Tres Jovens"],
+  BibleBookEnum.danielSongOfThree: [
+    "Oração de Azarias",
+    "Oracao de Azarias",
+    "Cântico dos Três Jovens",
+    "Cantico dos Tres Jovens"
+  ],
   BibleBookEnum.danielSusanna: ["Susana", "Suzana"],
   BibleBookEnum.danielBelAndTheDragon: ["Bel e o Dragão", "Bel e o Dragao"],
   BibleBookEnum.firstEsdras: ["1 Esdras", "Primeiro Esdras"],

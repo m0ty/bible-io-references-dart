@@ -14,8 +14,16 @@ const Map<BibleBookEnum, List<String>> hebrewBookNames = {
   BibleBookEnum.secondSamuel: ['שמואל ב', 'שמואל ב׳', 'שמואל ב\''],
   BibleBookEnum.firstKings: ['מלכים א', 'מלכים א׳', 'מלכים א\''],
   BibleBookEnum.secondKings: ['מלכים ב', 'מלכים ב׳', 'מלכים ב\''],
-  BibleBookEnum.firstChronicles: ['דברי הימים א', 'דברי הימים א׳', 'דברי הימים א\''],
-  BibleBookEnum.secondChronicles: ['דברי הימים ב', 'דברי הימים ב׳', 'דברי הימים ב\''],
+  BibleBookEnum.firstChronicles: [
+    'דברי הימים א',
+    'דברי הימים א׳',
+    'דברי הימים א\''
+  ],
+  BibleBookEnum.secondChronicles: [
+    'דברי הימים ב',
+    'דברי הימים ב׳',
+    'דברי הימים ב\''
+  ],
   BibleBookEnum.ezra: ['עזרא'],
   BibleBookEnum.nehemiah: ['נחמיה'],
   BibleBookEnum.esther: ['אסתר', 'מגילת אסתר'],
@@ -41,50 +49,196 @@ const Map<BibleBookEnum, List<String>> hebrewBookNames = {
   BibleBookEnum.haggai: ['חגי'],
   BibleBookEnum.zechariah: ['זכריה'],
   BibleBookEnum.malachi: ['מלאכי'],
-  BibleBookEnum.matthew: ['מתי', 'הבשורה על־פי מתי', 'הבשורה על פי מתי', 'מתיו'],
-  BibleBookEnum.mark: ['מרקוס', 'מרק', 'הבשורה על־פי מרקוס', 'הבשורה על פי מרקוס'],
-  BibleBookEnum.luke: ['לוקס', 'לוק', 'לוקאס', 'הבשורה על־פי לוקס', 'הבשורה על פי לוקס'],
+  BibleBookEnum.matthew: [
+    'מתי',
+    'הבשורה על־פי מתי',
+    'הבשורה על פי מתי',
+    'מתיו'
+  ],
+  BibleBookEnum.mark: [
+    'מרקוס',
+    'מרק',
+    'הבשורה על־פי מרקוס',
+    'הבשורה על פי מרקוס'
+  ],
+  BibleBookEnum.luke: [
+    'לוקס',
+    'לוק',
+    'לוקאס',
+    'הבשורה על־פי לוקס',
+    'הבשורה על פי לוקס'
+  ],
   BibleBookEnum.john: ['יוחנן', 'הבשורה על־פי יוחנן', 'הבשורה על פי יוחנן'],
   BibleBookEnum.acts: ['מעשי השליחים', 'מעשי'],
-  BibleBookEnum.romans: ['רומים', 'רומאים', 'אל הרומיים', 'אל הרומאים', 'אגרת פולוס השליח אל־הרומיים'],
-  BibleBookEnum.firstCorinthians: ['קורינתים א', 'קורינתיים א', 'אגרת פולוס הראשונה אל־הקורנתים', 'אגרת פולוס הראשונה אל־הקורנתיים'],
-  BibleBookEnum.secondCorinthians: ['קורינתים ב', 'קורינתיים ב', 'אגרת פולוס השנייה אל־הקורנתים', 'אגרת פולוס השנייה אל־הקורנתיים'],
+  BibleBookEnum.romans: [
+    'רומים',
+    'רומאים',
+    'אל הרומיים',
+    'אל הרומאים',
+    'אגרת פולוס השליח אל־הרומיים'
+  ],
+  BibleBookEnum.firstCorinthians: [
+    'קורינתים א',
+    'קורינתיים א',
+    'אגרת פולוס הראשונה אל־הקורנתים',
+    'אגרת פולוס הראשונה אל־הקורנתיים'
+  ],
+  BibleBookEnum.secondCorinthians: [
+    'קורינתים ב',
+    'קורינתיים ב',
+    'אגרת פולוס השנייה אל־הקורנתים',
+    'אגרת פולוס השנייה אל־הקורנתיים'
+  ],
   BibleBookEnum.galatians: ['גלטים', 'גלטיים', 'אל הגלטים', 'אל הגלטיים'],
   BibleBookEnum.ephesians: ['אפסים', 'אפסיים', 'אל האפסים', 'אל האפסיים'],
-  BibleBookEnum.philippians: ['פיליפים', 'פיליפיים', 'אל הפיליפים', 'אל הפיליפיים'],
-  BibleBookEnum.colossians: ['קולוסים', 'קולוסיים', 'אל הקולוסים', 'אל הקולוסיים'],
-  BibleBookEnum.firstThessalonians: ['תסלוניקים א', 'תסלוניקיים א', 'אל התסלוניקים הראשונה', 'אל התסלוניקיים הראשונה'],
-  BibleBookEnum.secondThessalonians: ['תסלוניקים ב', 'תסלוניקיים ב', 'אל התסלוניקים השנייה', 'אל התסלוניקיים השנייה'],
-  BibleBookEnum.firstTimothy: ['טימותיוס א', 'טימותיאוס א', 'אל טימותיוס א', 'אל טימותיאוס א'],
-  BibleBookEnum.secondTimothy: ['טימותיוס ב', 'טימותיאוס ב', 'אל טימותיוס ב', 'אל טימותיאוס ב'],
+  BibleBookEnum.philippians: [
+    'פיליפים',
+    'פיליפיים',
+    'אל הפיליפים',
+    'אל הפיליפיים'
+  ],
+  BibleBookEnum.colossians: [
+    'קולוסים',
+    'קולוסיים',
+    'אל הקולוסים',
+    'אל הקולוסיים'
+  ],
+  BibleBookEnum.firstThessalonians: [
+    'תסלוניקים א',
+    'תסלוניקיים א',
+    'אל התסלוניקים הראשונה',
+    'אל התסלוניקיים הראשונה'
+  ],
+  BibleBookEnum.secondThessalonians: [
+    'תסלוניקים ב',
+    'תסלוניקיים ב',
+    'אל התסלוניקים השנייה',
+    'אל התסלוניקיים השנייה'
+  ],
+  BibleBookEnum.firstTimothy: [
+    'טימותיוס א',
+    'טימותיאוס א',
+    'אל טימותיוס א',
+    'אל טימותיאוס א'
+  ],
+  BibleBookEnum.secondTimothy: [
+    'טימותיוס ב',
+    'טימותיאוס ב',
+    'אל טימותיוס ב',
+    'אל טימותיאוס ב'
+  ],
   BibleBookEnum.titus: ['טיטוס', 'אל טיטוס'],
   BibleBookEnum.philemon: ['פילימון', 'פילמון', 'אל פילימון', 'אל פילמון'],
   BibleBookEnum.hebrews: ['עברים', 'עבריים', 'אל העברים', 'אל העבריים'],
   BibleBookEnum.james: ['יעקב', 'יעקוב', 'אגרת יעקב'],
-  BibleBookEnum.firstPeter: ['פטרוס א', 'פטרוס א׳', 'פטרוס א\'', 'כיפא א', 'כיפא א׳', 'כיפא א\''],
-  BibleBookEnum.secondPeter: ['פטרוס ב', 'פטרוס ב׳', 'פטרוס ב\'', 'כיפא ב', 'כיפא ב׳', 'כיפא ב\''],
-  BibleBookEnum.firstJohn: ['יוחנן א', 'יוחנן א׳', 'יוחנן א\'', 'אגרת יוחנן הראשונה'],
-  BibleBookEnum.secondJohn: ['יוחנן ב', 'יוחנן ב׳', 'יוחנן ב\'', 'אגרת יוחנן השנייה'],
-  BibleBookEnum.thirdJohn: ['יוחנן ג', 'יוחנן ג׳', 'יוחנן ג\'', 'אגרת יוחנן השלישית'],
+  BibleBookEnum.firstPeter: [
+    'פטרוס א',
+    'פטרוס א׳',
+    'פטרוס א\'',
+    'כיפא א',
+    'כיפא א׳',
+    'כיפא א\''
+  ],
+  BibleBookEnum.secondPeter: [
+    'פטרוס ב',
+    'פטרוס ב׳',
+    'פטרוס ב\'',
+    'כיפא ב',
+    'כיפא ב׳',
+    'כיפא ב\''
+  ],
+  BibleBookEnum.firstJohn: [
+    'יוחנן א',
+    'יוחנן א׳',
+    'יוחנן א\'',
+    'אגרת יוחנן הראשונה'
+  ],
+  BibleBookEnum.secondJohn: [
+    'יוחנן ב',
+    'יוחנן ב׳',
+    'יוחנן ב\'',
+    'אגרת יוחנן השנייה'
+  ],
+  BibleBookEnum.thirdJohn: [
+    'יוחנן ג',
+    'יוחנן ג׳',
+    'יוחנן ג\'',
+    'אגרת יוחנן השלישית'
+  ],
   BibleBookEnum.jude: ['יהודה', 'אגרת יהודה'],
   BibleBookEnum.revelation: ['התגלות', 'ההתגלות', 'חזון יוחנן', 'חזון'],
   BibleBookEnum.tobit: ['טוביה', 'ספר טוביה', 'טובי', 'ספר טובי', 'טובית'],
   BibleBookEnum.judith: ['יהודית', 'ספר יהודית'],
   BibleBookEnum.wisdom: ['חכמת שלמה', 'ספר חכמת שלמה'],
-  BibleBookEnum.sirach: ['בן סירא', 'בן־סירא', 'ספר בן סירא', 'ספר בן־סירא', 'חכמת בן סירא', 'חכמת בן־סירא'],
+  BibleBookEnum.sirach: [
+    'בן סירא',
+    'בן־סירא',
+    'ספר בן סירא',
+    'ספר בן־סירא',
+    'חכמת בן סירא',
+    'חכמת בן־סירא'
+  ],
   BibleBookEnum.baruch: ['ברוך', 'ספר ברוך'],
-  BibleBookEnum.firstMaccabees: ['מקבים א', 'מקבים א׳', 'מקבים א\'', 'מכבים א', 'חשמונאים א', 'חשמונאים א׳', 'חשמונאים א\''],
-  BibleBookEnum.secondMaccabees: ['מקבים ב', 'מקבים ב׳', 'מקבים ב\'', 'מכבים ב', 'חשמונאים ב', 'חשמונאים ב׳', 'חשמונאים ב\''],
+  BibleBookEnum.firstMaccabees: [
+    'מקבים א',
+    'מקבים א׳',
+    'מקבים א\'',
+    'מכבים א',
+    'חשמונאים א',
+    'חשמונאים א׳',
+    'חשמונאים א\''
+  ],
+  BibleBookEnum.secondMaccabees: [
+    'מקבים ב',
+    'מקבים ב׳',
+    'מקבים ב\'',
+    'מכבים ב',
+    'חשמונאים ב',
+    'חשמונאים ב׳',
+    'חשמונאים ב\''
+  ],
   BibleBookEnum.thirdMaccabees: ['מקבים ג', 'מקבים ג׳', 'מקבים ג\'', 'מכבים ג'],
-  BibleBookEnum.fourthMaccabees: ['מקבים ד', 'מקבים ד׳', 'מקבים ד\'', 'מכבים ד'],
-  BibleBookEnum.estherAdditions: ['תוספות למגילת אסתר', 'תוספות לאסתר', 'אסתר (יוונית)', 'אסתר יוונית'],
-  BibleBookEnum.danielSongOfThree: ['תפילת עזריה', 'תפילת עזריה ושירת שלושת האנשים', 'שירת שלושת האנשים', 'שירת שלושת הנערים', 'תפילת עזריה ושיר שלושת האנשים בתוך הכבשן'],
+  BibleBookEnum.fourthMaccabees: [
+    'מקבים ד',
+    'מקבים ד׳',
+    'מקבים ד\'',
+    'מכבים ד'
+  ],
+  BibleBookEnum.estherAdditions: [
+    'תוספות למגילת אסתר',
+    'תוספות לאסתר',
+    'אסתר (יוונית)',
+    'אסתר יוונית'
+  ],
+  BibleBookEnum.danielSongOfThree: [
+    'תפילת עזריה',
+    'תפילת עזריה ושירת שלושת האנשים',
+    'שירת שלושת האנשים',
+    'שירת שלושת הנערים',
+    'תפילת עזריה ושיר שלושת האנשים בתוך הכבשן'
+  ],
   BibleBookEnum.danielSusanna: ['שושנה', 'מעשה שושנה', 'דניאל (שושנה)'],
-  BibleBookEnum.danielBelAndTheDragon: ['בל והתנין', 'בל והדרקון', 'בל והדרקון', 'דניאל (בל והדרקון)'],
+  BibleBookEnum.danielBelAndTheDragon: [
+    'בל והתנין',
+    'בל והדרקון',
+    'בל והדרקון',
+    'דניאל (בל והדרקון)'
+  ],
   BibleBookEnum.firstEsdras: ['עזרא החיצוני', 'עזרא החיצון'],
-  BibleBookEnum.secondEsdras: ['חזון עזרא', 'עזרא הרביעי', 'עזרא ד׳', 'עזרא ד\''],
+  BibleBookEnum.secondEsdras: [
+    'חזון עזרא',
+    'עזרא הרביעי',
+    'עזרא ד׳',
+    'עזרא ד\''
+  ],
   BibleBookEnum.prayerOfManasseh: ['תפילת מנשה', 'תפילת מנשה מלך יהודה'],
-  BibleBookEnum.psalm151: ['תהילים קנא', 'תהלים קנא', 'מזמור קנא', 'תהילים 151', 'תהלים 151'],
+  BibleBookEnum.psalm151: [
+    'תהילים קנא',
+    'תהלים קנא',
+    'מזמור קנא',
+    'תהילים 151',
+    'תהלים 151'
+  ],
 };
 
 /// Hebrew book abbreviations.
@@ -134,16 +288,52 @@ const Map<BibleBookEnum, List<String>> hebrewBookAbbreviations = {
   BibleBookEnum.john: ['יוח', 'יוחנ', 'יוחנן'],
   BibleBookEnum.acts: ['מעש', 'מעשי', 'מעשי השליחים'],
   BibleBookEnum.romans: ['רומ', 'רומים', 'רומאים'],
-  BibleBookEnum.firstCorinthians: ['קור-א', 'קור״א', 'קור"א', 'קורינתים א', 'קורינתיים א'],
-  BibleBookEnum.secondCorinthians: ['קור-ב', 'קור״ב', 'קור"ב', 'קורינתים ב', 'קורינתיים ב'],
+  BibleBookEnum.firstCorinthians: [
+    'קור-א',
+    'קור״א',
+    'קור"א',
+    'קורינתים א',
+    'קורינתיים א'
+  ],
+  BibleBookEnum.secondCorinthians: [
+    'קור-ב',
+    'קור״ב',
+    'קור"ב',
+    'קורינתים ב',
+    'קורינתיים ב'
+  ],
   BibleBookEnum.galatians: ['גלט', 'גלטים', 'גלטיים'],
   BibleBookEnum.ephesians: ['אפס', 'אפסים', 'אפסיים'],
   BibleBookEnum.philippians: ['פיליפ', 'פיליפים', 'פיליפיים'],
   BibleBookEnum.colossians: ['קול', 'קולוסים', 'קולוסיים'],
-  BibleBookEnum.firstThessalonians: ['תסל-א', 'תסל״א', 'תסל"א', 'תסלוניקים א', 'תסלוניקיים א'],
-  BibleBookEnum.secondThessalonians: ['תסל-ב', 'תסל״ב', 'תסל"ב', 'תסלוניקים ב', 'תסלוניקיים ב'],
-  BibleBookEnum.firstTimothy: ['טימ-א', 'טימ״א', 'טימ"א', 'טימותיוס א', 'טימותיאוס א'],
-  BibleBookEnum.secondTimothy: ['טימ-ב', 'טימ״ב', 'טימ"ב', 'טימותיוס ב', 'טימותיאוס ב'],
+  BibleBookEnum.firstThessalonians: [
+    'תסל-א',
+    'תסל״א',
+    'תסל"א',
+    'תסלוניקים א',
+    'תסלוניקיים א'
+  ],
+  BibleBookEnum.secondThessalonians: [
+    'תסל-ב',
+    'תסל״ב',
+    'תסל"ב',
+    'תסלוניקים ב',
+    'תסלוניקיים ב'
+  ],
+  BibleBookEnum.firstTimothy: [
+    'טימ-א',
+    'טימ״א',
+    'טימ"א',
+    'טימותיוס א',
+    'טימותיאוס א'
+  ],
+  BibleBookEnum.secondTimothy: [
+    'טימ-ב',
+    'טימ״ב',
+    'טימ"ב',
+    'טימותיוס ב',
+    'טימותיאוס ב'
+  ],
   BibleBookEnum.titus: ['טיט', 'טיטוס'],
   BibleBookEnum.philemon: ['פילימ', 'פילמון', 'פילימון'],
   BibleBookEnum.hebrews: ['עבר', 'עברים', 'עבריים'],
@@ -160,16 +350,49 @@ const Map<BibleBookEnum, List<String>> hebrewBookAbbreviations = {
   BibleBookEnum.wisdom: ['חכמת שלמה', 'WIS', 'Wis'],
   BibleBookEnum.sirach: ['בן סירא', 'SIR', 'Sir'],
   BibleBookEnum.baruch: ['ברוך', 'BAR', 'Bar'],
-  BibleBookEnum.firstMaccabees: ['מקבים א', 'מכבים א', 'חשמונאים א', '1MA', '1Macc'],
-  BibleBookEnum.secondMaccabees: ['מקבים ב', 'מכבים ב', 'חשמונאים ב', '2MA', '2Macc'],
+  BibleBookEnum.firstMaccabees: [
+    'מקבים א',
+    'מכבים א',
+    'חשמונאים א',
+    '1MA',
+    '1Macc'
+  ],
+  BibleBookEnum.secondMaccabees: [
+    'מקבים ב',
+    'מכבים ב',
+    'חשמונאים ב',
+    '2MA',
+    '2Macc'
+  ],
   BibleBookEnum.thirdMaccabees: ['מקבים ג', 'מכבים ג', '3MA', '3Macc'],
   BibleBookEnum.fourthMaccabees: ['מקבים ד', 'מכבים ד', '4MA', '4Macc'],
-  BibleBookEnum.estherAdditions: ['תוספות לאסתר', 'תוספות למגילת אסתר', 'ESG', 'EsthGr'],
-  BibleBookEnum.danielSongOfThree: ['תפילת עזריה', 'שירת שלושת האנשים', 'S3Y', 'PrAzar'],
+  BibleBookEnum.estherAdditions: [
+    'תוספות לאסתר',
+    'תוספות למגילת אסתר',
+    'ESG',
+    'EsthGr'
+  ],
+  BibleBookEnum.danielSongOfThree: [
+    'תפילת עזריה',
+    'שירת שלושת האנשים',
+    'S3Y',
+    'PrAzar'
+  ],
   BibleBookEnum.danielSusanna: ['שושנה', 'מעשה שושנה', 'SUS', 'Sus'],
-  BibleBookEnum.danielBelAndTheDragon: ['בל והתנין', 'בל והדרקון', 'BEL', 'Bel'],
+  BibleBookEnum.danielBelAndTheDragon: [
+    'בל והתנין',
+    'בל והדרקון',
+    'BEL',
+    'Bel'
+  ],
   BibleBookEnum.firstEsdras: ['עזרא החיצוני', '1ES', '1Esd'],
   BibleBookEnum.secondEsdras: ['חזון עזרא', 'עזרא הרביעי', '2ES', '2Esd'],
   BibleBookEnum.prayerOfManasseh: ['תפילת מנשה', 'MAN', 'PrMan'],
-  BibleBookEnum.psalm151: ['תהילים קנא', 'תהלים קנא', 'מזמור קנא', 'PS2', 'AddPs'],
+  BibleBookEnum.psalm151: [
+    'תהילים קנא',
+    'תהלים קנא',
+    'מזמור קנא',
+    'PS2',
+    'AddPs'
+  ],
 };

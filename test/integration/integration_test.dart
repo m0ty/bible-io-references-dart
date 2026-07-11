@@ -23,9 +23,15 @@ void main() {
     test('parse references with context-dependent book names', () {
       // Test books that might be confused in auto mode
       final refs = [
-        ('jn 1:1', BibleBookEnum.jonah), // Should prefer Jonah due to precedence
+        (
+          'jn 1:1',
+          BibleBookEnum.jonah
+        ), // Should prefer Jonah due to precedence
         ('jud 1:1', BibleBookEnum.judges), // Should prefer Judges
-        ('so 1:1', BibleBookEnum.songOfSolomon), // Should prefer Song of Solomon
+        (
+          'so 1:1',
+          BibleBookEnum.songOfSolomon
+        ), // Should prefer Song of Solomon
       ];
 
       for (final (ref, expectedBook) in refs) {
@@ -62,7 +68,8 @@ void main() {
       for (final language in languages) {
         final names = bookNamesByLanguage[language.code]?[testBook];
         if (names != null && names.isNotEmpty) {
-          final ref = verseRefFromStr('${names.first} 3:16', language: language);
+          final ref =
+              verseRefFromStr('${names.first} 3:16', language: language);
           expect(ref.book, testBook);
         }
       }

@@ -4,9 +4,18 @@ import '../bible_book_enum.dart';
 const Map<BibleBookEnum, List<String>> hindiBookNames = {
   BibleBookEnum.genesis: ['उत्पत्ति', 'उत्पत्ति ग्रन्थ'],
   BibleBookEnum.exodus: ['निर्गमन', 'निर्गमन ग्रन्थ'],
-  BibleBookEnum.leviticus: ['लैव्यव्यवस्था', 'लैव्यवस्था', 'लेवी', 'लेवी ग्रन्थ'],
+  BibleBookEnum.leviticus: [
+    'लैव्यव्यवस्था',
+    'लैव्यवस्था',
+    'लेवी',
+    'लेवी ग्रन्थ'
+  ],
   BibleBookEnum.numbers: ['गिनती', 'गणना', 'गणना ग्रन्थ'],
-  BibleBookEnum.deuteronomy: ['व्यवस्थाविवरण', 'विधि-विवरण', 'विधि-विवरण ग्रन्थ'],
+  BibleBookEnum.deuteronomy: [
+    'व्यवस्थाविवरण',
+    'विधि-विवरण',
+    'विधि-विवरण ग्रन्थ'
+  ],
   BibleBookEnum.joshua: ['यहोशू', 'योशुआ'],
   BibleBookEnum.judges: ['न्यायियों', 'न्यायकर्ता', 'न्यायकर्ताओं का ग्रन्थ'],
   BibleBookEnum.ruth: ['रूत', 'रूत का ग्रन्थ'],
@@ -23,7 +32,11 @@ const Map<BibleBookEnum, List<String>> hindiBookNames = {
   BibleBookEnum.psalms: ['भजन संहिता', 'भजन', 'स्तोत्र', 'स्तोत्र ग्रन्थ'],
   BibleBookEnum.proverbs: ['नीतिवचन', 'सूक्ति ग्रन्थ', 'सूक्ति संग्रह'],
   BibleBookEnum.ecclesiastes: ['सभोपदेशक', 'उपदेशक', 'उपदेशक ग्रन्थ'],
-  BibleBookEnum.songOfSolomon: ['श्रेष्ठगीत', 'सुलेमान का सर्वश्रेष्ठ गीत', 'सर्वश्रेष्ठ गीत'],
+  BibleBookEnum.songOfSolomon: [
+    'श्रेष्ठगीत',
+    'सुलेमान का सर्वश्रेष्ठ गीत',
+    'सर्वश्रेष्ठ गीत'
+  ],
   BibleBookEnum.isaiah: ['यशायाह', 'इसायाह'],
   BibleBookEnum.jeremiah: ['यिर्मयाह', 'यिरमियाह', 'येरेमियाह'],
   BibleBookEnum.lamentations: ['विलापगीत', 'शोक गीत'],
@@ -67,7 +80,12 @@ const Map<BibleBookEnum, List<String>> hindiBookNames = {
   BibleBookEnum.secondJohn: ['2 यूहन्ना'],
   BibleBookEnum.thirdJohn: ['3 यूहन्ना'],
   BibleBookEnum.jude: ['यहूदा', 'यूदस'],
-  BibleBookEnum.revelation: ['प्रकाशितवाक्य', 'प्रकाशित वाक्य', 'प्रकाशन', 'प्रकाशना-ग्रन्थ'],
+  BibleBookEnum.revelation: [
+    'प्रकाशितवाक्य',
+    'प्रकाशित वाक्य',
+    'प्रकाशन',
+    'प्रकाशना-ग्रन्थ'
+  ],
   BibleBookEnum.tobit: ['टोबीत', 'टोबीत का ग्रन्थ'],
   BibleBookEnum.judith: ['यूदीत', 'यूदीत का ग्रन्थ'],
   BibleBookEnum.wisdom: ['प्रज्ञा-ग्रन्थ', 'प्रज्ञा ग्रन्थ'],
@@ -77,13 +95,26 @@ const Map<BibleBookEnum, List<String>> hindiBookNames = {
   BibleBookEnum.secondMaccabees: ['मक्काबियों का दूसरा ग्रन्थ', '2 मक्काबियों'],
   BibleBookEnum.thirdMaccabees: ['3 मक्काबियों', '3 मक्काबियों का ग्रन्थ'],
   BibleBookEnum.fourthMaccabees: ['4 मक्काबियों', '4 मक्काबियों का ग्रन्थ'],
-  BibleBookEnum.estherAdditions: ['एस्तेर (यूनानी)', 'एस्तेर (ग्रीक)', 'एस्तेर की यूनानी परिशिष्ट'],
-  BibleBookEnum.danielSongOfThree: ['दानिय्येल (तीन युवकों का गीत)', 'दानिय्येल (तीन जनों का गीत)'],
+  BibleBookEnum.estherAdditions: [
+    'एस्तेर (यूनानी)',
+    'एस्तेर (ग्रीक)',
+    'एस्तेर की यूनानी परिशिष्ट'
+  ],
+  BibleBookEnum.danielSongOfThree: [
+    'दानिय्येल (तीन युवकों का गीत)',
+    'दानिय्येल (तीन जनों का गीत)'
+  ],
   BibleBookEnum.danielSusanna: ['दानिय्येल (सुसन्ना)', 'सुसन्ना'],
-  BibleBookEnum.danielBelAndTheDragon: ['दानिय्येल (बेल और अजगर)', 'दानिय्येल (बेल और ड्रैगन)'],
+  BibleBookEnum.danielBelAndTheDragon: [
+    'दानिय्येल (बेल और अजगर)',
+    'दानिय्येल (बेल और ड्रैगन)'
+  ],
   BibleBookEnum.firstEsdras: ['1 एस्द्रास', '1 एज़्द्रास'],
   BibleBookEnum.secondEsdras: ['2 एस्द्रास', '2 एज़्द्रास'],
-  BibleBookEnum.prayerOfManasseh: ['मनश्शे की प्रार्थना', 'मनश्शे का प्रार्थना-गीत'],
+  BibleBookEnum.prayerOfManasseh: [
+    'मनश्शे की प्रार्थना',
+    'मनश्शे का प्रार्थना-गीत'
+  ],
   BibleBookEnum.psalm151: ['भजन 151', 'भजन संहिता 151'],
 };
 
@@ -97,8 +128,22 @@ const Map<BibleBookEnum, List<String>> hindiBookAbbreviations = {
   BibleBookEnum.joshua: ['यहो', 'यहो.'],
   BibleBookEnum.judges: ['न्यायि', 'न्यायि.'],
   BibleBookEnum.ruth: ['रूत', 'रूत.'],
-  BibleBookEnum.firstSamuel: ['1शमू', '1 शमू', '1शमु', '1 शमु', '1शमू.', '1 शमू.'],
-  BibleBookEnum.secondSamuel: ['2शमू', '2 शमू', '2शमु', '2 शमु', '2शमू.', '2 शमू.'],
+  BibleBookEnum.firstSamuel: [
+    '1शमू',
+    '1 शमू',
+    '1शमु',
+    '1 शमु',
+    '1शमू.',
+    '1 शमू.'
+  ],
+  BibleBookEnum.secondSamuel: [
+    '2शमू',
+    '2 शमू',
+    '2शमु',
+    '2 शमु',
+    '2शमू.',
+    '2 शमू.'
+  ],
   BibleBookEnum.firstKings: ['1राजा', '1 राजा', '1राजा.', '1 राजा.'],
   BibleBookEnum.secondKings: ['2राजा', '2 राजा', '2राजा.', '2 राजा.'],
   BibleBookEnum.firstChronicles: ['1इति', '1 इति', '1इति.', '1 इति.'],
@@ -140,8 +185,18 @@ const Map<BibleBookEnum, List<String>> hindiBookAbbreviations = {
   BibleBookEnum.ephesians: ['इफि', 'इफि.'],
   BibleBookEnum.philippians: ['फिलि', 'फिलि.'],
   BibleBookEnum.colossians: ['कुलु', 'कुलु.'],
-  BibleBookEnum.firstThessalonians: ['1थिस्स', '1 थिस्स', '1थिस्स.', '1 थिस्स.'],
-  BibleBookEnum.secondThessalonians: ['2थिस्स', '2 थिस्स', '2थिस्स.', '2 थिस्स.'],
+  BibleBookEnum.firstThessalonians: [
+    '1थिस्स',
+    '1 थिस्स',
+    '1थिस्स.',
+    '1 थिस्स.'
+  ],
+  BibleBookEnum.secondThessalonians: [
+    '2थिस्स',
+    '2 थिस्स',
+    '2थिस्स.',
+    '2 थिस्स.'
+  ],
   BibleBookEnum.firstTimothy: ['1तीमु', '1 तीमु', '1तीमु.', '1 तीमु.'],
   BibleBookEnum.secondTimothy: ['2तीमु', '2 तीमु', '2तीमु.', '2 तीमु.'],
   BibleBookEnum.titus: ['तीतु', 'तीतु.'],

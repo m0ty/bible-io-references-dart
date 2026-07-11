@@ -38,7 +38,8 @@ void main() {
 
     test('parse with Unicode book names from different languages', () {
       // Test some Unicode characters that appear in book names
-      final ref = verseRefFromStr('João 3:16', language: BibleLanguageEnum.portuguese);
+      final ref =
+          verseRefFromStr('João 3:16', language: BibleLanguageEnum.portuguese);
       expect(ref.book, BibleBookEnum.john);
     });
 
@@ -69,7 +70,8 @@ void main() {
 
   group('Error boundary testing', () {
     test('parse with extremely large numbers', () {
-      expect(() => verseRefFromStr('John 999999:999999'), throwsA(isA<ParseVerseRefError>()));
+      expect(() => verseRefFromStr('John 999999:999999'),
+          throwsA(isA<ParseVerseRefError>()));
     });
 
     test('parse with empty strings', () {
@@ -81,24 +83,32 @@ void main() {
     });
 
     test('parse with invalid separators', () {
-      expect(() => verseRefFromStr('John 3/16'), throwsA(isA<ParseVerseRefError>()));
-      expect(() => verseRefFromStr('John 3;16'), throwsA(isA<ParseVerseRefError>()));
+      expect(() => verseRefFromStr('John 3/16'),
+          throwsA(isA<ParseVerseRefError>()));
+      expect(() => verseRefFromStr('John 3;16'),
+          throwsA(isA<ParseVerseRefError>()));
     });
 
     test('parse with missing components', () {
-      expect(() => verseRefFromStr('John 3'), throwsA(isA<ParseVerseRefError>()));
-      expect(() => verseRefFromStr('John :16'), throwsA(isA<ParseVerseRefError>()));
+      expect(
+          () => verseRefFromStr('John 3'), throwsA(isA<ParseVerseRefError>()));
+      expect(() => verseRefFromStr('John :16'),
+          throwsA(isA<ParseVerseRefError>()));
       expect(() => verseRefFromStr('3:16'), throwsA(isA<ParseVerseRefError>()));
     });
 
     test('parse range with invalid formats', () {
-      expect(() => verseRangeRefFromStr('John 3:16-'), throwsA(isA<ParseVerseRefError>()));
-      expect(() => verseRangeRefFromStr('John 3:16-17-18'), throwsA(isA<ParseVerseRefError>()));
+      expect(() => verseRangeRefFromStr('John 3:16-'),
+          throwsA(isA<ParseVerseRefError>()));
+      expect(() => verseRangeRefFromStr('John 3:16-17-18'),
+          throwsA(isA<ParseVerseRefError>()));
     });
 
     test('parse with non-numeric chapter/verse', () {
-      expect(() => verseRefFromStr('John abc:16'), throwsA(isA<ParseVerseRefError>()));
-      expect(() => verseRefFromStr('John 3:def'), throwsA(isA<ParseVerseRefError>()));
+      expect(() => verseRefFromStr('John abc:16'),
+          throwsA(isA<ParseVerseRefError>()));
+      expect(() => verseRefFromStr('John 3:def'),
+          throwsA(isA<ParseVerseRefError>()));
     });
   });
 
