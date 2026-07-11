@@ -356,6 +356,105 @@ void main() {
         contains('same books and order'),
       );
     });
+
+    test('composite KJV profile validates exact coordinates and aliases',
+        () async {
+      final validOutput = StringBuffer();
+      final validCode = await cli.runCli(
+        ['--profile', 'protestant-kjv', 'John 3:36'],
+        standardOutput: validOutput,
+        standardError: StringBuffer(),
+      );
+      final invalidOutput = StringBuffer();
+      final invalidCode = await cli.runCli(
+        ['--profile=kjv', '--format=json', 'John 3:37'],
+        standardOutput: invalidOutput,
+        standardError: StringBuffer(),
+      );
+      final invalidRecord =
+          jsonDecode(invalidOutput.toString()) as Map<String, dynamic>;
+
+      expect(validCode, 0);
+      expect(validOutput.toString(), 'John 3:36\n');
+      expect(invalidCode, 65);
+      expect(
+        (invalidRecord['error'] as Map<String, dynamic>)['code'],
+        'verse_out_of_range',
+      );
+    });
+
+    test('profile option is exclusive even when its value is none', () async {
+      final permissiveOutput = StringBuffer();
+      final permissiveCode = await cli.runCli(
+        ['--profile=none', 'John 3:99'],
+        standardOutput: permissiveOutput,
+        standardError: StringBuffer(),
+      );
+      final componentErrors = StringBuffer();
+      final componentCode = await cli.runCli(
+        ['--profile=none', '--canon=none', 'John 3:16'],
+        standardOutput: StringBuffer(),
+        standardError: componentErrors,
+      );
+      final duplicateErrors = StringBuffer();
+      final duplicateCode = await cli.runCli(
+        ['--profile=none', '--profile=kjv', 'John 3:16'],
+        standardOutput: StringBuffer(),
+        standardError: duplicateErrors,
+      );
+
+      expect(permissiveCode, 0);
+      expect(permissiveOutput.toString(), 'John 3:99\n');
+      expect(componentCode, 64);
+      expect(componentErrors.toString(), contains('cannot be combined'));
+      expect(duplicateCode, 64);
+      expect(duplicateErrors.toString(), contains('only once'));
+    });
+
+    test('composite profiles apply to every batch record', () async {
+      final output = StringBuffer();
+      final errors = StringBuffer();
+
+      final exitCode = await cli.runCli(
+        ['--profile=kjv', '--batch'],
+        standardInput: _input('John 3:36\nJohn 3:37\n'),
+        standardOutput: output,
+        standardError: errors,
+      );
+
+      expect(exitCode, 65);
+      expect(output.toString(), 'John 3:36\n');
+      expect(errors.toString(), contains('verse_out_of_range'));
+    });
+
+    test('family names are not silently treated as edition profiles', () async {
+      final errors = StringBuffer();
+
+      final exitCode = await cli.runCli(
+        ['--profile=catholic', 'John 3:16'],
+        standardOutput: StringBuffer(),
+        standardError: errors,
+      );
+
+      expect(exitCode, 64);
+      expect(errors.toString(), contains('profile families'));
+      expect(errors.toString(), contains('--canon'));
+    });
+
+    test('lists canonical profile IDs and input aliases', () async {
+      final output = StringBuffer();
+
+      final exitCode = await cli.runCli(
+        ['--list-profiles'],
+        standardOutput: output,
+        standardError: StringBuffer(),
+      );
+
+      expect(exitCode, 0);
+      expect(output.toString(), contains('protestant-kjv'));
+      expect(output.toString(), contains('aliases: kjv'));
+      expect(output.toString(), contains('families'));
+    });
   });
 }
 

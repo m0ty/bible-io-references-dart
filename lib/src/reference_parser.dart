@@ -100,17 +100,26 @@ final class ReferenceParseMetadata {
   ReferenceParseMetadata({
     required this.normalizedInput,
     Iterable<ReferenceBookTokenMatch> bookMatches = const [],
+    this.profileId,
+    this.canonProfileId,
+    this.versificationProfileId,
   }) : bookMatches = List.unmodifiable(bookMatches);
 
   const ReferenceParseMetadata._({
     required this.normalizedInput,
     required this.bookMatches,
+    required this.profileId,
+    required this.canonProfileId,
+    required this.versificationProfileId,
   });
 
   /// Empty metadata used by manually-created [ParseSuccess] values.
   static const empty = ReferenceParseMetadata._(
     normalizedInput: '',
     bookMatches: <ReferenceBookTokenMatch>[],
+    profileId: null,
+    canonProfileId: null,
+    versificationProfileId: null,
   );
 
   /// The Unicode-syntax-normalized, trimmed, whitespace-normalized source.
@@ -118,6 +127,15 @@ final class ReferenceParseMetadata {
 
   /// Matches for each explicit book token in source order.
   final List<ReferenceBookTokenMatch> bookMatches;
+
+  /// Composite Bible-profile ID used for validation, when configured.
+  final String? profileId;
+
+  /// Canon-profile ID used for membership and ordering, when configured.
+  final String? canonProfileId;
+
+  /// Versification-profile ID used for coordinate validation, when configured.
+  final String? versificationProfileId;
 
   /// Every distinct language selected for explicit book tokens.
   Set<BibleLanguageEnum> get detectedLanguages => Set.unmodifiable(
@@ -147,6 +165,15 @@ final class ReferenceParseMetadata {
           for (final language in detectedLanguages) language.code,
         ],
         'bookMatches': [for (final match in bookMatches) match.toJson()],
+        if (profileId != null ||
+            canonProfileId != null ||
+            versificationProfileId != null)
+          'validation': {
+            if (profileId case final value?) 'profile': value,
+            if (canonProfileId case final value?) 'canon': value,
+            if (versificationProfileId case final value?)
+              'versification': value,
+          },
       };
 
   @override
@@ -154,10 +181,19 @@ final class ReferenceParseMetadata {
       identical(this, other) ||
       other is ReferenceParseMetadata &&
           normalizedInput == other.normalizedInput &&
+          profileId == other.profileId &&
+          canonProfileId == other.canonProfileId &&
+          versificationProfileId == other.versificationProfileId &&
           _referenceListsEqual(bookMatches, other.bookMatches);
 
   @override
-  int get hashCode => Object.hash(normalizedInput, Object.hashAll(bookMatches));
+  int get hashCode => Object.hash(
+        normalizedInput,
+        Object.hashAll(bookMatches),
+        profileId,
+        canonProfileId,
+        versificationProfileId,
+      );
 }
 
 /// A configurable, reusable Bible-reference parser.
@@ -173,6 +209,7 @@ final class ReferenceParser {
     Iterable<BibleLanguageEnum> preferredLanguages = const [],
     ReferenceAmbiguityPolicy ambiguityPolicy =
         ReferenceAmbiguityPolicy.preferLanguagePriority,
+    BibleProfile? profile,
     CanonProfile? canonProfile,
     VersificationProfile? versificationProfile,
   }) {
@@ -202,26 +239,20 @@ final class ReferenceParser {
       if (!preferredCopy.contains(language)) preferredCopy.add(language);
     }
 
-    if (canonProfile != null &&
-        versificationProfile != null &&
-        !_referenceListsEqual(
-          canonProfile.books,
-          versificationProfile.canon.books,
-        )) {
-      throw ArgumentError.value(
-        canonProfile,
-        'canonProfile',
-        'must use the same books and order as versificationProfile',
-      );
-    }
+    final validation = _resolveValidationProfiles(
+      profile: profile,
+      canonProfile: canonProfile,
+      versificationProfile: versificationProfile,
+    );
 
     return ReferenceParser._(
       aliases: aliasesCopy,
       aliasesByLanguage: Map.unmodifiable(localizedCopy),
       preferredLanguages: List.unmodifiable(preferredCopy),
       ambiguityPolicy: ambiguityPolicy,
-      canonProfile: canonProfile ?? versificationProfile?.canon,
-      versificationProfile: versificationProfile,
+      profile: validation.profile,
+      canonProfile: validation.canonProfile,
+      versificationProfile: validation.versificationProfile,
     );
   }
 
@@ -230,6 +261,7 @@ final class ReferenceParser {
     required this.aliasesByLanguage,
     required this.preferredLanguages,
     required this.ambiguityPolicy,
+    required this.profile,
     required this.canonProfile,
     required this.versificationProfile,
   })  : _languagePriority = _buildLanguagePriority(preferredLanguages),
@@ -252,6 +284,9 @@ final class ReferenceParser {
 
   /// The configured collision policy.
   final ReferenceAmbiguityPolicy ambiguityPolicy;
+
+  /// Optional edition-specific composite profile used by this parser.
+  final BibleProfile? profile;
 
   /// Optional canon membership and ordering enforced while parsing.
   ///
@@ -627,6 +662,9 @@ final class ReferenceParser {
       ReferenceParseMetadata(
         normalizedInput: input.trim().replaceAll(RegExp(r'\s+'), ' '),
         bookMatches: matches,
+        profileId: profile?.id,
+        canonProfileId: canonProfile?.id,
+        versificationProfileId: versificationProfile?.id,
       );
 }
 

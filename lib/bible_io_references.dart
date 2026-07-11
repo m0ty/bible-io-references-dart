@@ -3,6 +3,7 @@ library;
 
 export 'bible_book_enum.dart';
 export 'bible_language_enum.dart';
+export 'bible_profile.dart';
 export 'canon_profile.dart';
 export 'languages.dart';
 export 'reference_extractor.dart';

@@ -40,10 +40,17 @@ void main() {
   print(catholicRange); // Tobit 1:1-Matthew 1:1
   print(CanonProfile.broadEasternOrthodox.length); // 83 supported tokens
 
-  final kjv = VersificationProfile.kingJames;
-  final strictParser = ReferenceParser(versificationProfile: kjv);
+  final bibleProfile = BibleProfile.protestantKingJames;
+  final kjv = bibleProfile.versification;
+  final strictParser = ReferenceParser(profile: bibleProfile);
+  print(BibleProfile.lookup('kjv') == bibleProfile); // true
   print(kjv.totalVerseCount); // 31102
   print(strictParser.parse('John 3:36')); // John 3:36
+
+  final validated = strictParser.parseResult('John 3:16');
+  print(validated.metadataOrNull?.profileId); // protestant-kjv
+  print(validated.metadataOrNull?.canonProfileId); // protestant
+  print(validated.metadataOrNull?.versificationProfileId); // kjv
 
   final invalidCoordinate = strictParser.parseResult('John 3:37');
   if (invalidCoordinate case ParseFailure(error: final error)) {

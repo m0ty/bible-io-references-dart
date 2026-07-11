@@ -24,6 +24,7 @@ void main() {
     test('Catholic profile contains 73 canonical books in USCCB order', () {
       final profile = CanonProfile.catholic;
 
+      expect(profile, same(CanonProfile.romanCatholic));
       expect(profile.length, 73);
       expect(profile.firstBook, BibleBookEnum.genesis);
       expect(profile.lastBook, BibleBookEnum.revelation);
@@ -59,6 +60,7 @@ void main() {
       final profile = CanonProfile.broadEasternOrthodox;
 
       expect(profile, same(CanonProfile.easternOrthodox));
+      expect(profile, same(CanonProfile.easternOrthodoxBroad));
       expect(profile.length, BibleBookEnum.values.length);
       expect(profile.books.toSet(), BibleBookEnum.values.toSet());
       expect(profile.contains(BibleBookEnum.prayerOfManasseh), isTrue);

@@ -31,27 +31,32 @@ sealed class Passage {
   /// Restores a passage produced by [toJson].
   static Passage fromJson(
     Map<String, Object?> json, {
+    BibleProfile? profile,
     CanonProfile? canonProfile,
     VersificationProfile? versificationProfile,
   }) {
     return switch (json['type']) {
       'book' => BookPassage.fromJson(
           json,
+          profile: profile,
           canonProfile: canonProfile,
           versificationProfile: versificationProfile,
         ),
       'chapter' => ChapterPassage.fromJson(
           json,
+          profile: profile,
           canonProfile: canonProfile,
           versificationProfile: versificationProfile,
         ),
       'verses' => VersePassage.fromJson(
           json,
+          profile: profile,
           canonProfile: canonProfile,
           versificationProfile: versificationProfile,
         ),
       'sequence' => PassageSequence.fromJson(
           json,
+          profile: profile,
           canonProfile: canonProfile,
           versificationProfile: versificationProfile,
         ),
@@ -77,18 +82,21 @@ final class BookPassage extends Passage {
 
   static BookPassage fromJson(
     Map<String, Object?> json, {
+    BibleProfile? profile,
     CanonProfile? canonProfile,
     VersificationProfile? versificationProfile,
   }) {
     final book = _bookFromJson(json['book']);
-    final effectiveCanon = _effectiveCanonProfile(
-      canonProfile,
-      versificationProfile,
+    final validation = _resolveValidationProfiles(
+      profile: profile,
+      canonProfile: canonProfile,
+      versificationProfile: versificationProfile,
     );
+    final effectiveCanon = validation.canonProfile;
     if (effectiveCanon != null) {
       _validateBookInCanon(book, effectiveCanon);
     }
-    versificationProfile?.chapterCount(book);
+    validation.versificationProfile?.chapterCount(book);
     return BookPassage(book);
   }
 
@@ -145,19 +153,22 @@ final class ChapterPassage extends Passage {
     required BibleBookEnum book,
     required int startChapter,
     int? endChapter,
+    BibleProfile? profile,
     CanonProfile? canonProfile,
     VersificationProfile? versificationProfile,
   }) {
-    final effectiveCanon = _effectiveCanonProfile(
-      canonProfile,
-      versificationProfile,
+    final validation = _resolveValidationProfiles(
+      profile: profile,
+      canonProfile: canonProfile,
+      versificationProfile: versificationProfile,
     );
+    final effectiveCanon = validation.canonProfile;
     if (effectiveCanon != null) {
       _validateBookInCanon(book, effectiveCanon);
     }
-    versificationProfile?.verseCount(book, startChapter);
+    validation.versificationProfile?.verseCount(book, startChapter);
     if (endChapter != null) {
-      versificationProfile?.verseCount(book, endChapter);
+      validation.versificationProfile?.verseCount(book, endChapter);
     }
     return ChapterPassage(book, startChapter, endChapter);
   }
@@ -168,6 +179,7 @@ final class ChapterPassage extends Passage {
 
   static ChapterPassage fromJson(
     Map<String, Object?> json, {
+    BibleProfile? profile,
     CanonProfile? canonProfile,
     VersificationProfile? versificationProfile,
   }) {
@@ -179,6 +191,7 @@ final class ChapterPassage extends Passage {
       book: _bookFromJson(json['book']),
       startChapter: _intFromJson(json, 'startChapter'),
       endChapter: end as int?,
+      profile: profile,
       canonProfile: canonProfile,
       versificationProfile: versificationProfile,
     );
@@ -234,6 +247,7 @@ final class VersePassage extends Passage {
 
   static VersePassage fromJson(
     Map<String, Object?> json, {
+    BibleProfile? profile,
     CanonProfile? canonProfile,
     VersificationProfile? versificationProfile,
   }) {
@@ -245,6 +259,7 @@ final class VersePassage extends Passage {
       for (final value in values)
         Reference.fromJson(
           _passageJsonMap(value, 'selection'),
+          profile: profile,
           canonProfile: canonProfile,
           versificationProfile: versificationProfile,
         ),
@@ -306,6 +321,7 @@ final class PassageSequence extends Passage {
 
   static PassageSequence fromJson(
     Map<String, Object?> json, {
+    BibleProfile? profile,
     CanonProfile? canonProfile,
     VersificationProfile? versificationProfile,
   }) {
@@ -317,6 +333,7 @@ final class PassageSequence extends Passage {
       for (final value in values)
         Passage.fromJson(
           _passageJsonMap(value, 'passage'),
+          profile: profile,
           canonProfile: canonProfile,
           versificationProfile: versificationProfile,
         ),
@@ -409,9 +426,9 @@ final class PassageParser {
         passages.length == 1 ? passages.single : PassageSequence(passages);
     return _ParsedPassage(
       value,
-      ReferenceParseMetadata(
-        normalizedInput: _normalizePassageWhitespace(normalizedInput),
-        bookMatches: matches,
+      referenceParser._metadata(
+        _normalizePassageWhitespace(normalizedInput),
+        matches,
       ),
     );
   }

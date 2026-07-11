@@ -83,6 +83,11 @@ final class CanonProfile {
     books: _catholicBooks,
   );
 
+  /// Explicit family name for the conventional Roman Catholic canon.
+  ///
+  /// This aliases [catholic] and does not imply a particular versification.
+  static CanonProfile get romanCatholic => catholic;
+
   /// A broad Eastern Orthodox interoperability profile.
   ///
   /// Orthodox Old Testament contents and ordering vary by jurisdiction and
@@ -109,6 +114,9 @@ final class CanonProfile {
   /// The shorter name is convenient when an API already establishes that its
   /// built-in Orthodox option is the broad interoperability profile.
   static CanonProfile get easternOrthodox => broadEasternOrthodox;
+
+  /// Alias that makes the broad, non-normative nature explicit in call sites.
+  static CanonProfile get easternOrthodoxBroad => broadEasternOrthodox;
 
   /// A stable machine-readable identifier for this profile.
   final String id;

@@ -1,4 +1,5 @@
 import 'package:bible_io_references/bible_book_enum.dart';
+import 'package:bible_io_references/bible_profile.dart';
 import 'package:bible_io_references/canon_profile.dart';
 import 'package:bible_io_references/references.dart';
 import 'package:bible_io_references/versification_profile.dart';
@@ -210,6 +211,115 @@ void main() {
         () => ReferenceParser(
           canonProfile: CanonProfile.catholic,
           versificationProfile: kjv,
+        ),
+        throwsArgumentError,
+      );
+    });
+  });
+
+  group('composite Bible profiles', () {
+    final profile = BibleProfile.protestantKingJames;
+
+    test('configure reference and passage parsers as one exact edition', () {
+      final referenceParser = ReferenceParser(profile: profile);
+      final referenceResult = referenceParser.parseResult('John 3:36');
+      final passageResult = PassageParser(referenceParser: referenceParser)
+          .parseResult('John 3:16,18-20');
+
+      expect(referenceResult.isSuccess, isTrue);
+      expect(referenceParser.profile, same(profile));
+      expect(referenceParser.canonProfile, same(profile.canon));
+      expect(
+        referenceParser.versificationProfile,
+        same(profile.versification),
+      );
+      expect(referenceResult.metadataOrNull?.profileId, 'protestant-kjv');
+      expect(referenceResult.metadataOrNull?.canonProfileId, 'protestant');
+      expect(referenceResult.metadataOrNull?.versificationProfileId, 'kjv');
+      expect(passageResult.metadataOrNull?.profileId, 'protestant-kjv');
+      expect(
+        referenceParser.parseResult('John 3:37').errorOrNull?.errorCode,
+        ReferenceParseErrorCode.verseOutOfRange,
+      );
+    });
+
+    test('serializes validation context only when configured', () {
+      final configured = ReferenceParser(profile: profile)
+          .parseResult('John 3:16')
+          .metadataOrNull!;
+      final componentConfigured = ReferenceParser(
+        canonProfile: CanonProfile.protestant,
+        versificationProfile: kjv,
+      ).parseResult('John 3:16').metadataOrNull!;
+      final permissive = Reference.parseResult('John 3:16').metadataOrNull!;
+
+      expect(configured.toJson()['validation'], {
+        'profile': 'protestant-kjv',
+        'canon': 'protestant',
+        'versification': 'kjv',
+      });
+      expect(componentConfigured.toJson()['validation'], {
+        'canon': 'protestant',
+        'versification': 'kjv',
+      });
+      expect(permissive.toJson(), isNot(contains('validation')));
+      expect(configured, isNot(permissive));
+    });
+
+    test('checked, copy, and JSON APIs accept the composite profile', () {
+      expect(
+        () => VerseRef.checked(
+          book: BibleBookEnum.john,
+          chapter: 3,
+          verse: 37,
+          profile: profile,
+        ),
+        _throwsValidation(ReferenceValidationErrorCode.verseOutOfRange),
+      );
+
+      final verse = Reference.parse('John 3:16') as VerseRef;
+      expect(verse.copyWith(profile: profile), verse);
+      expect(
+        Reference.fromJson(verse.toJson(), profile: profile),
+        verse,
+      );
+      expect(
+        Passage.fromJson(
+          const {
+            'type': 'chapter',
+            'book': 'jo',
+            'startChapter': 21,
+            'endChapter': null,
+          },
+          profile: profile,
+        ),
+        ChapterPassage(BibleBookEnum.john, 21),
+      );
+    });
+
+    test('rejects mixing composite and component configuration', () {
+      expect(
+        () => ReferenceParser(
+          profile: profile,
+          canonProfile: CanonProfile.protestant,
+        ),
+        throwsArgumentError,
+      );
+      expect(
+        () => VerseRef.checked(
+          book: BibleBookEnum.john,
+          chapter: 3,
+          verse: 16,
+          profile: profile,
+          versificationProfile: kjv,
+        ),
+        throwsArgumentError,
+      );
+      expect(
+        () => Reference.fromJson(
+          const {'type': 'verse', 'book': 'jo', 'chapter': 3, 'verse': 16},
+          profile: profile,
+          canonProfile: CanonProfile.protestant,
         ),
         throwsArgumentError,
       );
