@@ -285,6 +285,78 @@ void main() {
       expect(usfmOutput.toString(), 'JHN 3:16,18-20\n');
     });
   });
+
+  group('canon and versification options', () {
+    test('keeps validation disabled by default', () async {
+      final output = StringBuffer();
+
+      final exitCode = await cli.runCli(
+        ['John 3:99'],
+        standardOutput: output,
+        standardError: StringBuffer(),
+      );
+
+      expect(exitCode, 0);
+      expect(output.toString(), 'John 3:99\n');
+    });
+
+    test('KJV versification reports typed coordinate errors', () async {
+      final output = StringBuffer();
+
+      final exitCode = await cli.runCli(
+        ['--versification=kjv', '--format=json', 'John 3:37'],
+        standardOutput: output,
+        standardError: StringBuffer(),
+      );
+      final record = jsonDecode(output.toString()) as Map<String, dynamic>;
+
+      expect(exitCode, 65);
+      expect(
+        (record['error'] as Map<String, dynamic>)['code'],
+        'verse_out_of_range',
+      );
+    });
+
+    test('canon-only validation supports Catholic ordering', () async {
+      final output = StringBuffer();
+
+      final exitCode = await cli.runCli(
+        ['--canon', 'catholic', 'Tobit 1:1-Matthew 1:1'],
+        standardOutput: output,
+        standardError: StringBuffer(),
+      );
+
+      expect(exitCode, 0);
+      expect(output.toString(), 'Tobit 1:1-Matthew 1:1\n');
+    });
+
+    test('rejects unknown and incompatible profile options', () async {
+      final unknownErrors = StringBuffer();
+      final unknownCode = await cli.runCli(
+        ['--versification', 'unknown', 'John 3:16'],
+        standardOutput: StringBuffer(),
+        standardError: unknownErrors,
+      );
+      final incompatibleErrors = StringBuffer();
+      final incompatibleCode = await cli.runCli(
+        [
+          '--canon=catholic',
+          '--versification=kjv',
+          'John 3:16',
+        ],
+        standardOutput: StringBuffer(),
+        standardError: incompatibleErrors,
+      );
+
+      expect(unknownCode, 64);
+      expect(unknownErrors.toString(), contains('Unsupported versification'));
+      expect(incompatibleCode, 64);
+      expect(
+        incompatibleErrors.toString(),
+        contains('same books and order'),
+      );
+    });
+  });
 }
 
 Stream<List<int>> _input(String value) =>

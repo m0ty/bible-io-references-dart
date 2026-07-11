@@ -24,6 +24,19 @@
 - Published CLI executable with rich-passage language/text/JSON/OSIS/USFM
   output and a package example
 - UTF-8 CLI batch processing from stdin or files with JSON Lines and exit codes
+- Immutable `CanonProfile` presets for the 66-book Protestant and 73-book
+  Catholic canons plus a documented broad Eastern Orthodox interoperability
+  superset, with custom membership and ordering support
+- Opt-in `VersificationProfile.kingJames` validation with complete chapter and
+  verse bounds, canonical ordinals, typed validation errors, and custom
+  versification support
+- Canon- and versification-aware `ReferenceParser`, `PassageParser`, checked
+  factories, copying, and JSON restoration
+- Inclusive profile-aware range operations: endpoints, `contains`,
+  `intersects`, `merge`, lazy verse iteration, and verse count
+- CLI `--canon` and `--versification` options with typed validation diagnostics
+- `THIRD_PARTY_NOTICES.md` attribution for the generated KJV versification
+  data and its pinned MIT-licensed sources
 - Linux and Windows CI for formatting, analysis, and the full test suite
 
 ### Fixed

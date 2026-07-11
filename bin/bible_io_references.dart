@@ -32,6 +32,8 @@ Future<int> runCli(
   }
 
   BibleLanguageEnum? language;
+  CanonProfile? canonProfile;
+  VersificationProfile? versificationProfile;
   var outputFormat = 'text';
   var batchFromStdin = false;
   String? inputPath;
@@ -59,6 +61,37 @@ Future<int> runCli(
           error.message?.toString() ?? error.toString(),
           errors,
         );
+      }
+    } else if (argument == '--canon') {
+      if (index + 1 >= arguments.length) {
+        return _usageError('Missing value for --canon.', errors);
+      }
+      try {
+        canonProfile = _parseCanonProfile(arguments[++index]);
+      } on ArgumentError catch (error) {
+        return _usageError(error.message.toString(), errors);
+      }
+    } else if (argument.startsWith('--canon=')) {
+      try {
+        canonProfile = _parseCanonProfile(argument.substring(8));
+      } on ArgumentError catch (error) {
+        return _usageError(error.message.toString(), errors);
+      }
+    } else if (argument == '--versification') {
+      if (index + 1 >= arguments.length) {
+        return _usageError('Missing value for --versification.', errors);
+      }
+      try {
+        versificationProfile = _parseVersificationProfile(arguments[++index]);
+      } on ArgumentError catch (error) {
+        return _usageError(error.message.toString(), errors);
+      }
+    } else if (argument.startsWith('--versification=')) {
+      try {
+        versificationProfile =
+            _parseVersificationProfile(argument.substring(16));
+      } on ArgumentError catch (error) {
+        return _usageError(error.message.toString(), errors);
       }
     } else if (argument == '--format' || argument == '-f') {
       if (index + 1 >= arguments.length) {
@@ -113,8 +146,19 @@ Future<int> runCli(
     );
   }
   if (!isBatch && inputParts.isEmpty) {
-    return _usageError('A Bible reference is required.', errors);
+    return _usageError('A Bible passage is required.', errors);
   }
+
+  final ReferenceParser referenceParser;
+  try {
+    referenceParser = ReferenceParser(
+      canonProfile: canonProfile,
+      versificationProfile: versificationProfile,
+    );
+  } on ArgumentError catch (error) {
+    return _usageError(error.message.toString(), errors);
+  }
+  final passageParser = PassageParser(referenceParser: referenceParser);
 
   if (!isBatch) {
     return _runSingle(
@@ -123,6 +167,8 @@ Future<int> runCli(
       outputFormat: outputFormat,
       output: output,
       errors: errors,
+      referenceParser: referenceParser,
+      passageParser: passageParser,
     );
   }
 
@@ -141,6 +187,8 @@ Future<int> runCli(
       outputFormat: outputFormat,
       output: output,
       errors: errors,
+      referenceParser: referenceParser,
+      passageParser: passageParser,
     );
   } on IOException catch (error) {
     final source = inputPath == null ? 'standard input' : '"$inputPath"';
@@ -161,9 +209,16 @@ int _runSingle(
   required String outputFormat,
   required StringSink output,
   required StringSink errors,
+  required ReferenceParser referenceParser,
+  required PassageParser passageParser,
 }) {
   try {
-    final parsed = _parseInput(input, language: language);
+    final parsed = _parseInput(
+      input,
+      language: language,
+      referenceParser: referenceParser,
+      passageParser: passageParser,
+    );
     if (outputFormat == 'json') {
       output.writeln(jsonEncode(_parsedToJson(parsed)));
     } else {
@@ -195,6 +250,8 @@ Future<int> _runBatch(
   required String outputFormat,
   required StringSink output,
   required StringSink errors,
+  required ReferenceParser referenceParser,
+  required PassageParser passageParser,
 }) async {
   var lineNumber = 0;
   var hadFailure = false;
@@ -207,7 +264,12 @@ Future<int> _runBatch(
     if (input.isEmpty) continue;
 
     try {
-      final parsed = _parseInput(input, language: language);
+      final parsed = _parseInput(
+        input,
+        language: language,
+        referenceParser: referenceParser,
+        passageParser: passageParser,
+      );
       if (outputFormat == 'json') {
         output.writeln(
           jsonEncode({
@@ -254,10 +316,12 @@ Future<int> _runBatch(
 Object _parseInput(
   String input, {
   required BibleLanguageEnum? language,
+  required ReferenceParser referenceParser,
+  required PassageParser passageParser,
 }) {
-  final reference = Reference.parseResult(input, language: language);
+  final reference = referenceParser.parseResult(input, language: language);
   if (reference.valueOrNull case final value?) return value;
-  return Passage.parse(input, language: language);
+  return passageParser.parse(input, language: language);
 }
 
 Map<String, Object?> _parsedToJson(Object parsed) => switch (parsed) {
@@ -320,6 +384,36 @@ String _ioErrorMessage(IOException error) {
   return error.toString();
 }
 
+CanonProfile? _parseCanonProfile(String value) {
+  return switch (value.trim().toLowerCase()) {
+    'none' => null,
+    'protestant' => CanonProfile.protestant,
+    'catholic' => CanonProfile.catholic,
+    'orthodox' ||
+    'eastern-orthodox' ||
+    'eastern-orthodox-broad' =>
+      CanonProfile.broadEasternOrthodox,
+    _ => throw ArgumentError.value(
+        value,
+        'canon',
+        'Unsupported canon "$value". Use none, protestant, catholic, or '
+            'orthodox.',
+      ),
+  };
+}
+
+VersificationProfile? _parseVersificationProfile(String value) {
+  return switch (value.trim().toLowerCase()) {
+    'none' => null,
+    'kjv' || 'protestant' => VersificationProfile.kingJames,
+    _ => throw ArgumentError.value(
+        value,
+        'versification',
+        'Unsupported versification "$value". Use none or kjv.',
+      ),
+  };
+}
+
 int _usageError(String message, StringSink sink) {
   sink.writeln(message);
   _printUsage(sink);
@@ -329,22 +423,27 @@ int _usageError(String message, StringSink sink) {
 void _printUsage(StringSink sink) {
   sink.writeln('Usage:');
   sink.writeln(
-    '  bible_io_references [--language CODE] '
+    '  bible_io_references [--language CODE] [--canon NAME] '
+    '[--versification NAME] '
     '[--format text|json|osis|usfm] '
     '"John 3:16"',
   );
   sink.writeln(
-    '  bible_io_references [--language CODE] '
+    '  bible_io_references [--language CODE] [--canon NAME] '
+    '[--versification NAME] '
     '[--format text|json|osis|usfm] --batch',
   );
   sink.writeln(
-    '  bible_io_references [--language CODE] '
+    '  bible_io_references [--language CODE] [--canon NAME] '
+    '[--versification NAME] '
     '[--format text|json|osis|usfm] '
     '--input FILE',
   );
   sink.writeln();
   sink.writeln('Batch input is UTF-8 with one passage per nonblank line.');
   sink.writeln('JSON batch output is JSON Lines, including per-line errors.');
+  sink.writeln('Canons: none, protestant, catholic, orthodox.');
+  sink.writeln('Versifications: none, kjv (strict chapter/verse validation).');
   sink.writeln(
       'Exit codes: 0 success, 64 usage, 65 parse failure, 66 input error.');
 }

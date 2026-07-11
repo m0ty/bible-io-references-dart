@@ -173,6 +173,8 @@ final class ReferenceParser {
     Iterable<BibleLanguageEnum> preferredLanguages = const [],
     ReferenceAmbiguityPolicy ambiguityPolicy =
         ReferenceAmbiguityPolicy.preferLanguagePriority,
+    CanonProfile? canonProfile,
+    VersificationProfile? versificationProfile,
   }) {
     final aliasesCopy = Map<String, BibleBookEnum>.unmodifiable(aliases);
     final localizedCopy = <BibleLanguageEnum, Map<String, BibleBookEnum>>{};
@@ -200,11 +202,26 @@ final class ReferenceParser {
       if (!preferredCopy.contains(language)) preferredCopy.add(language);
     }
 
+    if (canonProfile != null &&
+        versificationProfile != null &&
+        !_referenceListsEqual(
+          canonProfile.books,
+          versificationProfile.canon.books,
+        )) {
+      throw ArgumentError.value(
+        canonProfile,
+        'canonProfile',
+        'must use the same books and order as versificationProfile',
+      );
+    }
+
     return ReferenceParser._(
       aliases: aliasesCopy,
       aliasesByLanguage: Map.unmodifiable(localizedCopy),
       preferredLanguages: List.unmodifiable(preferredCopy),
       ambiguityPolicy: ambiguityPolicy,
+      canonProfile: canonProfile ?? versificationProfile?.canon,
+      versificationProfile: versificationProfile,
     );
   }
 
@@ -213,6 +230,8 @@ final class ReferenceParser {
     required this.aliasesByLanguage,
     required this.preferredLanguages,
     required this.ambiguityPolicy,
+    required this.canonProfile,
+    required this.versificationProfile,
   })  : _languagePriority = _buildLanguagePriority(preferredLanguages),
         _bookIndex = _ParserBookIndex(
           aliases: aliases,
@@ -233,6 +252,17 @@ final class ReferenceParser {
 
   /// The configured collision policy.
   final ReferenceAmbiguityPolicy ambiguityPolicy;
+
+  /// Optional canon membership and ordering enforced while parsing.
+  ///
+  /// A `null` value preserves the package's historically permissive behavior.
+  final CanonProfile? canonProfile;
+
+  /// Optional edition-specific chapter and verse limits.
+  ///
+  /// When supplied, its canon is used unless an equivalent [canonProfile] was
+  /// provided explicitly.
+  final VersificationProfile? versificationProfile;
 
   final List<BibleLanguageEnum> _languagePriority;
   final _ParserBookIndex _bookIndex;
@@ -327,6 +357,7 @@ final class ReferenceParser {
       chapter: chapter,
       verse: verse,
     );
+    _validateVerseProfile(value);
     return _ParsedReference(
       value,
       _metadata(normalizedRef, [resolution.match]),
@@ -414,7 +445,9 @@ final class ReferenceParser {
       chapter: endChapter,
       verse: endVerse,
     );
-    if (start.compareTo(end) >= 0) {
+    _validateVerseProfile(start);
+    _validateVerseProfile(end);
+    if (_compareVerseProfiles(start, end) >= 0) {
       final code = start.book == end.book
           ? ReferenceParseErrorCode.sameBookRangeNotAscending
           : ReferenceParseErrorCode.crossBookRangeNotAscending;
@@ -425,9 +458,76 @@ final class ReferenceParser {
     }
 
     return _ParsedReference(
-      VerseRangeRef.checked(start: start, end: end),
+      VerseRangeRef(start: start, end: end),
       _metadata(normalizedRef, matches),
     );
+  }
+
+  void _validateBookProfile(BibleBookEnum book) {
+    final canon = canonProfile;
+    if (canon != null && !canon.contains(book)) {
+      throw ParseVerseRefError.typed(
+        code: ReferenceParseErrorCode.bookNotInCanon,
+        details: '${book.fullName} is not part of the ${canon.displayName} '
+            'canon profile',
+      );
+    }
+  }
+
+  void _validateChapterProfile(BibleBookEnum book, int chapter) {
+    _validateBookProfile(book);
+    final profile = versificationProfile;
+    if (profile == null) return;
+    try {
+      profile.verseCount(book, chapter);
+    } on ReferenceValidationException catch (error) {
+      throw _profileParseError(error);
+    }
+  }
+
+  void _validateVerseProfile(VerseRef verse) {
+    _validateBookProfile(verse.book);
+    final profile = versificationProfile;
+    if (profile == null) return;
+    try {
+      profile.validateCoordinate(
+        book: verse.book,
+        chapter: verse.chapter,
+        verse: verse.verse,
+      );
+    } on ReferenceValidationException catch (error) {
+      throw _profileParseError(error);
+    }
+  }
+
+  int _compareVerseProfiles(VerseRef left, VerseRef right) {
+    final versification = versificationProfile;
+    if (versification != null) {
+      return _compareVersesInProfile(left, right, versification);
+    }
+    final canon = canonProfile;
+    if (canon == null) return left.compareTo(right);
+    final bookComparison = canon.compare(left.book, right.book);
+    if (bookComparison != 0) return bookComparison;
+    final chapterComparison = left.chapter.compareTo(right.chapter);
+    if (chapterComparison != 0) return chapterComparison;
+    return left.verse.compareTo(right.verse);
+  }
+
+  ParseVerseRefError _profileParseError(
+    ReferenceValidationException error,
+  ) {
+    final code = switch (error.code) {
+      ReferenceValidationErrorCode.bookNotInCanon =>
+        ReferenceParseErrorCode.bookNotInCanon,
+      ReferenceValidationErrorCode.chapterOutOfRange =>
+        ReferenceParseErrorCode.chapterOutOfRange,
+      ReferenceValidationErrorCode.verseOutOfRange =>
+        ReferenceParseErrorCode.verseOutOfRange,
+      ReferenceValidationErrorCode.ordinalOutOfRange =>
+        ReferenceParseErrorCode.unknown,
+    };
+    return ParseVerseRefError.typed(code: code, details: error.details);
   }
 
   void _validateLanguage(BibleLanguageEnum? language) {
