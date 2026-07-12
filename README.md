@@ -3,7 +3,7 @@
 A comprehensive Dart library for parsing Bible verse references into structured objects, supporting multiple languages and flexible formatting.
 
 [![pub package](https://img.shields.io/pub/v/bible_io_references.svg)](https://pub.dev/packages/bible_io_references)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
 ## Features
 
@@ -23,10 +23,6 @@ A comprehensive Dart library for parsing Bible verse references into structured 
 - ✅ **Unicode-aware input**: Fullwidth forms, Arabic-Indic digits, RTL punctuation, and CJK adjacency
 - ✅ **Reference extraction**: Find and safely linkify passages embedded in arbitrary prose
 - ✅ **Interoperability**: OSIS and USFM identifiers for every supported book
-- ✅ **Canon profiles**: Protestant, Catholic, and broad Eastern Orthodox membership and ordering
-- ✅ **Exact Bible profiles**: Immutable canon/versification pairings with stable IDs and registries
-- ✅ **Opt-in real validation**: Complete bundled King James chapter and verse limits
-- ✅ **Range operations**: Profile-aware containment, intersection, merging, iteration, and length
 - ✅ **Batch CLI**: UTF-8 stdin/files, JSON Lines, and meaningful exit codes
 - ✅ **Zero dependencies**: Pure Dart implementation
 
@@ -76,11 +72,6 @@ void main() {
 - **`ReferenceInputNormalizer`**: Syntax-oriented Unicode normalization with UTF-16 source mapping
 - **`ReferenceExtractor`**: Parser-driven extraction and span-safe replacement/linkification
 - **`ParseResult<T>`**: Non-throwing success/failure result with parse metadata
-- **`CanonProfile`**: Immutable canon membership and canonical book ordering
-- **`VersificationProfile`**: Edition-specific chapter/verse bounds and verse ordinals
-- **`BibleProfile`**: An exact, named canon/versification pairing
-- **`BibleProfileRegistry`**: Immutable lookup of exact profiles by stable ID or alias
-- **`ReferenceValidationException`**: Typed direct-validation failure
 
 ### Parsing Methods
 
@@ -254,115 +245,6 @@ final detected = Reference.parseResult('Juan 3:16');
 print(detected.metadataOrNull?.detectedLanguage); // Spanish
 ```
 
-### Canons, Versifications, and Exact Bible Profiles
-
-Parsing remains backward-compatible and permissive by default: it applies
-broad numeric sanity limits but does not assume a canon or Bible edition.
-Configure a reusable parser when membership, ordering, or real coordinates
-matter.
-
-`CanonProfile` provides three ordered membership presets:
-
-```dart
-final protestant = CanonProfile.protestant;             // 66 books
-final catholic = CanonProfile.catholic;                 // 73 books
-final orthodox = CanonProfile.broadEasternOrthodox;     // broad 83-token set
-
-print(catholic.contains(BibleBookEnum.tobit)); // true
-print(catholic.indexOf(BibleBookEnum.tobit));  // profile-aware index
-print(catholic.compare(
-  BibleBookEnum.tobit,
-  BibleBookEnum.matthew,
-)); // negative
-```
-
-The Catholic preset treats the additions to Esther and Daniel as parts of
-those books, rather than additional canonical books. Orthodox canons and book
-orders vary by jurisdiction and edition. `broadEasternOrthodox` is therefore a
-permissive interoperability superset containing every book token modeled by
-the package; it is not presented as a universal normative Orthodox order.
-Custom ordered canons can be created with the validated `CanonProfile`
-constructor.
-
-A canon validates membership and cross-book order only. Catholic and Orthodox
-are therefore profile *families*, not exact Bible editions: each family can
-contain multiple canons, versifications, and eventually coordinate mappings.
-`BibleProfile` names one exact, compatible canon/versification pairing.
-
-The currently bundled exact profile is `protestant-kjv` (with the `kjv`
-lookup alias):
-
-```dart
-final profile = BibleProfile.protestantKingJames;
-final strictParser = ReferenceParser(profile: profile);
-
-print(BibleProfile.lookup('kjv') == profile); // true
-print(profile.canon.id);                      // protestant
-print(profile.versification.id);             // kjv
-
-print(strictParser.parse('John 3:36')); // John 3:36
-
-final invalid = strictParser.parseResult('John 3:37');
-if (invalid case ParseFailure(error: final error)) {
-  print(error.errorCode); // ReferenceParseErrorCode.verseOutOfRange
-}
-
-final strictPassageParser = PassageParser(
-  referenceParser: strictParser,
-);
-print(strictPassageParser.parse('John 3:16,18-20'));
-```
-
-`BibleProfile.values`, `BibleProfile.lookup`, and `BibleProfile.require`
-expose the built-in registry. Applications can construct additional exact
-profiles and an immutable `BibleProfileRegistry` with their own aliases. A
-profile constructor rejects a versification whose book membership or order
-does not exactly match its canon.
-
-Profile-aware parse failures use `ReferenceParseErrorCode.bookNotInCanon`,
-`chapterOutOfRange`, or `verseOutOfRange`. Direct profile validation and
-profile-aware checked factories throw `ReferenceValidationException`, whose
-`code` is a `ReferenceValidationErrorCode`:
-
-```dart
-try {
-  VerseRef.checked(
-    book: BibleBookEnum.john,
-    chapter: 3,
-    verse: 37,
-    profile: profile,
-  );
-} on ReferenceValidationException catch (error) {
-  print(error.code); // ReferenceValidationErrorCode.verseOutOfRange
-}
-```
-
-Successful parse metadata records which validation configuration was used:
-
-```dart
-final result = strictParser.parseResult('John 3:16');
-print(result.metadataOrNull?.profileId);              // protestant-kjv
-print(result.metadataOrNull?.canonProfileId);         // protestant
-print(result.metadataOrNull?.versificationProfileId); // kjv
-print(result.metadataOrNull?.toJson()['validation']);
-// {profile: protestant-kjv, canon: protestant, versification: kjv}
-```
-
-Use `ReferenceParser(canonProfile: CanonProfile.catholic)` for canon-only
-parsing. If both `canonProfile` and `versificationProfile` are supplied, their
-books and order must agree. A composite `profile` cannot be combined with
-either lower-level option. Checked constructors, `copyWith`, and JSON restore
-methods also accept these optional validation configurations.
-
-Only the complete 66-book Protestant/KJV exact profile is bundled today.
-Catholic and Orthodox canon membership is available, but named exact profiles
-are deferred until the package can model edition-specific coordinate changes
-and use authoritative chapter/verse data with suitable redistribution terms.
-Callers can supply custom `VersificationProfile` and `BibleProfile` values in
-the meantime. The KJV table's data sources, transformations, and source
-attributions are recorded in
-[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
-
 ### Localized Formatting
 
 ```dart
@@ -391,47 +273,6 @@ final json = nextVerse.toJson();
 final restored = Reference.fromJson(json);
 print(restored == nextVerse); // true
 ```
-
-### Profile-Aware Range Operations
-
-Range operations require an explicit `VersificationProfile`. That makes
-length, adjacency, chapter transitions, and cross-book ordering deterministic.
-A `VerseRef` is treated as an inclusive one-verse span.
-
-```dart
-final profile = VersificationProfile.kingJames;
-final parser = ReferenceParser(versificationProfile: profile);
-final span = parser.parseRange('John 3:35-4:2');
-final selection = parser.parse('John 3:36-4:1');
-
-print(span.firstVerse); // John 3:35
-print(span.lastVerse);  // John 4:2
-print(span.contains(selection, profile: profile));  // true
-print(span.intersects(selection, profile: profile)); // true
-print(span.verseCount(profile: profile));             // 4
-
-for (final verse in span.verses(profile: profile)) {
-  print(verse); // John 3:35, John 3:36, John 4:1, John 4:2
-}
-
-final adjacent = parser.parse('John 4:3');
-final merged = span.merge(adjacent, profile: profile);
-print(merged); // John 3:35-4:3
-
-final overlapOnly = span.merge(
-  adjacent,
-  profile: profile,
-  includeAdjacent: false,
-);
-print(overlapOnly); // null
-```
-
-`contains` checks complete inclusive containment; `intersects` requires at
-least one shared verse, so adjacency alone is not intersection. `merge`
-combines overlapping references and, by default, adjacent references; it
-returns `null` when their union would have a gap. `verses` is lazy and
-`verseCount` is inclusive. Invalid coordinates propagate typed
-`ReferenceValidationException` errors from the selected profile.
 
 ### OSIS and USFM Identifiers
 
@@ -482,15 +323,9 @@ try {
   final ref = VerseRef.parse("InvalidBook 3:16");
 } on ParseVerseRefError catch (e) {
   print("Error code: ${e.code}");      // "unknown_book"
-  print("Typed code: ${e.errorCode}"); // ReferenceParseErrorCode.unknownBook
   print("Details: ${e.details}");      // "book token 'InvalidBook' did not match known books"
 }
 ```
-
-Prefer `parseResult` for untrusted input so ordinary parse failures remain
-values rather than exceptions. Profile-aware parsing reports canon, chapter,
-and verse errors through the same typed result API; direct coordinate APIs use
-`ReferenceValidationException` as described above.
 
 ### Working with Book Enums
 
@@ -520,13 +355,10 @@ print(judgesRef.book); // BibleBookEnum.judges
 
 ### Current Limitations
 
-- Static parsing APIs remain permissive by default. Real chapter/verse
-  validation is opt-in through a configured parser or checked factory.
-- KJV is currently the only bundled complete versification table. Catholic and
-  Orthodox exact profiles require caller-supplied data until edition-specific
-  coordinate modeling and authoritative, redistributable datasets are settled.
-- The broad Eastern Orthodox canon is an interoperability superset; local
-  Orthodox membership and ordering differences require a custom profile.
+- Chapter and verse numbers receive broad sanity checks only. The package does
+  not apply edition-specific chapter or verse tables.
+- Canon membership is not enforced; book availability and numbering vary by
+  Bible tradition and edition.
 - Rich passage lists use commas and passage sequences use semicolons; prose
   words such as “and” are not grammar separators.
 - Unicode normalization targets reference syntax. It does not transliterate
@@ -559,19 +391,6 @@ dart run bible_io_references --format osis "John 3:16-17"
 dart run bible_io_references --format usfm "John 3:16-17"
 # Output: JHN 3:16-17
 
-# Enforce Catholic membership and book ordering without verse-count validation
-dart run bible_io_references --canon catholic "Tobit 1:1-Matthew 1:1"
-
-# Discover exact built-in Bible-profile IDs and aliases
-dart run bible_io_references --list-profiles
-
-# Enforce the exact Protestant/KJV canon and chapter/verse bounds
-dart run bible_io_references --profile protestant-kjv "John 3:36"
-# Output: John 3:36
-
-dart run bible_io_references --profile kjv --format json "John 3:37"
-# Exit 65 with a verse_out_of_range JSON error
-
 # UTF-8 batch input, one passage per nonblank line
 dart run bible_io_references --input references.txt --format json
 
@@ -585,19 +404,6 @@ contain `reference` for the narrow legacy shapes and `passage` for rich shapes.
 Batch JSON uses JSON Lines and includes a record for every success or failure.
 Exit codes are `0` for success, `64` for usage errors, `65` when parsing fails,
 and `66` when input cannot be read or decoded.
-
-`--profile` accepts `none`, the exact ID `protestant-kjv`, or its `kjv` alias.
-Use `--list-profiles` to discover the canonical IDs and accepted aliases.
-Family names such as `catholic` and `orthodox` are intentionally rejected by
-`--profile` because they do not identify a single edition and versification.
-
-`--canon` remains the canon-only option and accepts `none`, `protestant`,
-`catholic`, or `orthodox`; `orthodox` selects the broad interoperability
-superset. `--versification` remains the lower-level option and accepts `none`
-or `kjv`. All validation defaults to `none`, preserving permissive parsing.
-`--profile` cannot be combined with `--canon` or `--versification`, and an
-incompatible lower-level combination such as
-`--canon catholic --versification kjv` is a usage error.
 
 ## Performance
 
@@ -633,7 +439,7 @@ Contributions are welcome! Please:
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) file for details.
+GNU Affero General Public License v3.0 - see [LICENSE](LICENSE) for details.
 
 ## Changelog
 

@@ -1,6 +1,6 @@
 name: bible_io_references
 description: Parse, format, serialize, and extract multilingual Bible references and rich passage expressions with Unicode and OSIS/USFM support.
-version: 1.0.0
+version: 1.1.0
 homepage: https://github.com/m0ty/bible-io-references-dart
 repository: https://github.com/m0ty/bible-io-references-dart
 issue_tracker: https://github.com/m0ty/bible-io-references-dart/issues

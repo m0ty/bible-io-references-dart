@@ -1,4 +1,4 @@
-## Unreleased
+## 1.1.0 - 2026-07-12
 
 ### Added
 
@@ -24,25 +24,13 @@
 - Published CLI executable with rich-passage language/text/JSON/OSIS/USFM
   output and a package example
 - UTF-8 CLI batch processing from stdin or files with JSON Lines and exit codes
-- Immutable `CanonProfile` presets for the 66-book Protestant and 73-book
-  Catholic canons plus a documented broad Eastern Orthodox interoperability
-  superset, with custom membership and ordering support
-- Opt-in `VersificationProfile.kingJames` validation with complete chapter and
-  verse bounds, canonical ordinals, typed validation errors, and custom
-  versification support
-- Immutable `BibleProfile` canon/versification pairings, stable profile IDs,
-  custom registries, and the exact built-in `protestant-kjv` profile (`kjv`
-  alias); Catholic and Orthodox remain families rather than ambiguous aliases
-- Canon- and versification-aware `ReferenceParser`, `PassageParser`, checked
-  factories, copying, and JSON restoration, plus composite-profile validation
-  provenance in successful parse metadata
-- Inclusive profile-aware range operations: endpoints, `contains`,
-  `intersects`, `merge`, lazy verse iteration, and verse count
-- CLI `--profile` and `--list-profiles` support alongside lower-level `--canon`
-  and `--versification` options, with typed validation diagnostics
-- `THIRD_PARTY_NOTICES.md` attribution for the generated KJV versification
-  data and its pinned MIT-licensed sources
 - Linux and Windows CI for formatting, analysis, and the full test suite
+
+### Changed
+
+- Reference validation remains edition-neutral: chapter and verse numbers use
+  broad sanity limits, while canon membership and edition-specific numbering
+  are intentionally not enforced
 
 ### Fixed
 
@@ -52,6 +40,7 @@
 - Pathological chapter and verse numbers are rejected by broad sanity limits
 - Previously undiscovered property, integration, concurrency, and benchmark tests now run by default
 - Ambiguous two-character Arabic aliases no longer silently select different books
+- README license badge and wording now match the repository's AGPL-3.0 license
 
 ## 1.0.0
 

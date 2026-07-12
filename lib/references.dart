@@ -1,13 +1,7 @@
 import 'bible_book_enum.dart';
 import 'bible_language_enum.dart';
-import 'bible_profile.dart';
-import 'canon_profile.dart';
 import 'languages.dart';
 import 'reference_input_normalizer.dart';
-import 'reference_limits.dart';
-import 'versification_profile.dart';
-
-export 'reference_limits.dart';
 
 part 'src/reference_parser.dart';
 part 'src/passage_parser.dart';
@@ -23,9 +17,6 @@ enum ReferenceParseErrorCode {
   emptyBookToken('empty_book_token'),
   ambiguousBook('ambiguous_book'),
   unsupportedLanguage('unsupported_language'),
-  bookNotInCanon('book_not_in_canon'),
-  chapterOutOfRange('chapter_out_of_range'),
-  verseOutOfRange('verse_out_of_range'),
   sameBookRangeNotAscending('same_book_range_not_ascending'),
   crossBookRangeNotAscending('cross_book_range_not_ascending'),
   missingNumericToken('missing_numeric_token'),
@@ -103,6 +94,14 @@ final class ParseFailure<T> extends ParseResult<T> {
   ReferenceParseMetadata? get metadataOrNull => null;
 }
 
+/// Broad sanity limits used by reference construction and parsing.
+///
+/// These deliberately exceed chapter and verse numbers used by known Bible
+/// traditions. They reject pathological numeric input without claiming that a
+/// particular verse exists in a specific edition.
+const int maxReferenceChapterNumber = 999;
+const int maxReferenceVerseNumber = 999;
+
 /// Raised when a verse reference string cannot be parsed.
 ///
 /// This exception provides machine-readable error codes and optional details
@@ -130,9 +129,6 @@ class ParseVerseRefError implements Exception {
   /// - `"empty_book_token"`: Book token is empty after normalization
   /// - `"ambiguous_book"`: Several books match under a rejecting policy
   /// - `"unsupported_language"`: Language code not supported
-  /// - `"book_not_in_canon"`: Book is outside the selected canon profile
-  /// - `"chapter_out_of_range"`: Chapter is absent from the versification
-  /// - `"verse_out_of_range"`: Verse is absent from the versification
   /// - `"same_book_range_not_ascending"`: Range end comes before start
   /// - `"missing_numeric_token"`: Required numeric component missing
   final String code;
@@ -216,25 +212,10 @@ sealed class Reference {
       _standardReferenceParser.parseResult(ref, language: language);
 
   /// Restores a reference produced by [toJson].
-  static Reference fromJson(
-    Map<String, Object?> json, {
-    BibleProfile? profile,
-    CanonProfile? canonProfile,
-    VersificationProfile? versificationProfile,
-  }) {
+  static Reference fromJson(Map<String, Object?> json) {
     return switch (json['type']) {
-      'verse' => VerseRef.fromJson(
-          json,
-          profile: profile,
-          canonProfile: canonProfile,
-          versificationProfile: versificationProfile,
-        ),
-      'range' => VerseRangeRef.fromJson(
-          json,
-          profile: profile,
-          canonProfile: canonProfile,
-          versificationProfile: versificationProfile,
-        ),
+      'verse' => VerseRef.fromJson(json),
+      'range' => VerseRangeRef.fromJson(json),
       final type => throw FormatException('unknown reference type: $type'),
     };
   }
@@ -277,17 +258,10 @@ class VerseRef extends Reference implements Comparable<VerseRef> {
         assert(verse > 0 && verse <= maxReferenceVerseNumber);
 
   /// Creates a reference while enforcing broad numeric sanity limits.
-  ///
-  /// Supplying [canonProfile] additionally checks membership. Supplying
-  /// [versificationProfile] checks real chapter and verse bounds and implies
-  /// that profile's canon.
   factory VerseRef.checked({
     required BibleBookEnum book,
     required int chapter,
     required int verse,
-    BibleProfile? profile,
-    CanonProfile? canonProfile,
-    VersificationProfile? versificationProfile,
   }) {
     _validateReferenceNumber(
       chapter,
@@ -298,20 +272,6 @@ class VerseRef extends Reference implements Comparable<VerseRef> {
       verse,
       component: 'verse',
       maximum: maxReferenceVerseNumber,
-    );
-    final validation = _resolveValidationProfiles(
-      profile: profile,
-      canonProfile: canonProfile,
-      versificationProfile: versificationProfile,
-    );
-    final effectiveCanon = validation.canonProfile;
-    if (effectiveCanon != null) {
-      _validateBookInCanon(book, effectiveCanon);
-    }
-    validation.versificationProfile?.validateCoordinate(
-      book: book,
-      chapter: chapter,
-      verse: verse,
     );
     return VerseRef(book: book, chapter: chapter, verse: verse);
   }
@@ -353,40 +313,22 @@ class VerseRef extends Reference implements Comparable<VerseRef> {
       _standardReferenceParser.parseVerseResult(ref, language: language);
 
   /// Restores a verse reference produced by [toJson].
-  static VerseRef fromJson(
-    Map<String, Object?> json, {
-    BibleProfile? profile,
-    CanonProfile? canonProfile,
-    VersificationProfile? versificationProfile,
-  }) {
+  static VerseRef fromJson(Map<String, Object?> json) {
     final book = _bookFromJson(json['book']);
     final chapter = _intFromJson(json, 'chapter');
     final verse = _intFromJson(json, 'verse');
-    return VerseRef.checked(
-      book: book,
-      chapter: chapter,
-      verse: verse,
-      profile: profile,
-      canonProfile: canonProfile,
-      versificationProfile: versificationProfile,
-    );
+    return VerseRef.checked(book: book, chapter: chapter, verse: verse);
   }
 
   VerseRef copyWith({
     BibleBookEnum? book,
     int? chapter,
     int? verse,
-    BibleProfile? profile,
-    CanonProfile? canonProfile,
-    VersificationProfile? versificationProfile,
   }) =>
       VerseRef.checked(
         book: book ?? this.book,
         chapter: chapter ?? this.chapter,
         verse: verse ?? this.verse,
-        profile: profile,
-        canonProfile: canonProfile,
-        versificationProfile: versificationProfile,
       );
 
   @override
@@ -400,10 +342,6 @@ class VerseRef extends Reference implements Comparable<VerseRef> {
         'verse': verse,
       };
 
-  /// Compares using the legacy declaration order of [BibleBookEnum].
-  ///
-  /// For edition-aware ordering, use a [VersificationProfile] or the
-  /// profile-aware operations exported by `reference_range_operations.dart`.
   @override
   int compareTo(VerseRef other) {
     final bookComparison = book.index.compareTo(other.book.index);
@@ -454,36 +392,11 @@ class VerseRangeRef extends Reference {
   });
 
   /// Creates an ascending range.
-  ///
-  /// When a canon or versification is supplied, ordering follows that profile
-  /// rather than the legacy [BibleBookEnum] declaration order.
   factory VerseRangeRef.checked({
     required VerseRef start,
     required VerseRef end,
-    BibleProfile? profile,
-    CanonProfile? canonProfile,
-    VersificationProfile? versificationProfile,
   }) {
-    final validation = _resolveValidationProfiles(
-      profile: profile,
-      canonProfile: canonProfile,
-      versificationProfile: versificationProfile,
-    );
-    final effectiveCanon = validation.canonProfile;
-    if (effectiveCanon != null) {
-      _validateBookInCanon(start.book, effectiveCanon);
-      _validateBookInCanon(end.book, effectiveCanon);
-    }
-    final comparison = validation.versificationProfile != null
-        ? _compareVersesInProfile(
-            start,
-            end,
-            validation.versificationProfile!,
-          )
-        : effectiveCanon != null
-            ? _compareVersesInCanon(start, end, effectiveCanon)
-            : start.compareTo(end);
-    if (comparison >= 0) {
+    if (start.compareTo(end) >= 0) {
       throw ArgumentError.value(
         end,
         'end',
@@ -535,46 +448,19 @@ class VerseRangeRef extends Reference {
       _standardReferenceParser.parseRangeResult(ref, language: language);
 
   /// Restores a range reference produced by [toJson].
-  static VerseRangeRef fromJson(
-    Map<String, Object?> json, {
-    BibleProfile? profile,
-    CanonProfile? canonProfile,
-    VersificationProfile? versificationProfile,
-  }) {
-    final start = VerseRef.fromJson(
-      _mapFromJson(json, 'start'),
-      profile: profile,
-      canonProfile: canonProfile,
-      versificationProfile: versificationProfile,
-    );
-    final end = VerseRef.fromJson(
-      _mapFromJson(json, 'end'),
-      profile: profile,
-      canonProfile: canonProfile,
-      versificationProfile: versificationProfile,
-    );
-    return VerseRangeRef.checked(
-      start: start,
-      end: end,
-      profile: profile,
-      canonProfile: canonProfile,
-      versificationProfile: versificationProfile,
-    );
+  static VerseRangeRef fromJson(Map<String, Object?> json) {
+    final start = VerseRef.fromJson(_mapFromJson(json, 'start'));
+    final end = VerseRef.fromJson(_mapFromJson(json, 'end'));
+    return VerseRangeRef.checked(start: start, end: end);
   }
 
   VerseRangeRef copyWith({
     VerseRef? start,
     VerseRef? end,
-    BibleProfile? profile,
-    CanonProfile? canonProfile,
-    VersificationProfile? versificationProfile,
   }) =>
       VerseRangeRef.checked(
         start: start ?? this.start,
         end: end ?? this.end,
-        profile: profile,
-        canonProfile: canonProfile,
-        versificationProfile: versificationProfile,
       );
 
   @override
@@ -936,98 +822,6 @@ void _validateReferenceNumber(
   if (value < 1 || value > maximum) {
     throw RangeError.range(value, 1, maximum, component);
   }
-}
-
-final class _ValidationProfiles {
-  const _ValidationProfiles({
-    required this.profile,
-    required this.canonProfile,
-    required this.versificationProfile,
-  });
-
-  final BibleProfile? profile;
-  final CanonProfile? canonProfile;
-  final VersificationProfile? versificationProfile;
-}
-
-_ValidationProfiles _resolveValidationProfiles({
-  BibleProfile? profile,
-  CanonProfile? canonProfile,
-  VersificationProfile? versificationProfile,
-}) {
-  if (profile != null &&
-      (canonProfile != null || versificationProfile != null)) {
-    throw ArgumentError.value(
-      profile,
-      'profile',
-      'cannot be combined with canonProfile or versificationProfile',
-    );
-  }
-  final resolvedVersification = profile?.versification ?? versificationProfile;
-  final resolvedCanon =
-      profile?.canon ?? canonProfile ?? resolvedVersification?.canon;
-  if (resolvedCanon != null &&
-      resolvedVersification != null &&
-      !_sameCanonBooks(resolvedCanon, resolvedVersification.canon)) {
-    throw ArgumentError.value(
-      resolvedCanon,
-      'canonProfile',
-      'must use the same books and order as versificationProfile',
-    );
-  }
-  return _ValidationProfiles(
-    profile: profile,
-    canonProfile: resolvedCanon,
-    versificationProfile: resolvedVersification,
-  );
-}
-
-bool _sameCanonBooks(CanonProfile left, CanonProfile right) {
-  if (left.books.length != right.books.length) return false;
-  for (var index = 0; index < left.books.length; index++) {
-    if (left.books[index] != right.books[index]) return false;
-  }
-  return true;
-}
-
-void _validateBookInCanon(BibleBookEnum book, CanonProfile canon) {
-  if (canon.contains(book)) return;
-  throw ReferenceValidationException(
-    code: ReferenceValidationErrorCode.bookNotInCanon,
-    profileId: canon.id,
-    book: book,
-    details: '${book.fullName} is not part of the ${canon.displayName} canon',
-  );
-}
-
-int _compareVersesInCanon(
-  VerseRef left,
-  VerseRef right,
-  CanonProfile canon,
-) {
-  final bookComparison = canon.compare(left.book, right.book);
-  if (bookComparison != 0) return bookComparison;
-  final chapterComparison = left.chapter.compareTo(right.chapter);
-  if (chapterComparison != 0) return chapterComparison;
-  return left.verse.compareTo(right.verse);
-}
-
-int _compareVersesInProfile(
-  VerseRef left,
-  VerseRef right,
-  VersificationProfile profile,
-) {
-  final leftOrdinal = profile.ordinalOf(
-    book: left.book,
-    chapter: left.chapter,
-    verse: left.verse,
-  );
-  final rightOrdinal = profile.ordinalOf(
-    book: right.book,
-    chapter: right.chapter,
-    verse: right.verse,
-  );
-  return leftOrdinal.compareTo(rightOrdinal);
 }
 
 int _intFromJson(Map<String, Object?> json, String key) {

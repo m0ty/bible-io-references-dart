@@ -45,12 +45,7 @@ This document describes the comprehensive test suite for the `bible_io_reference
 - `passage_identifier_test.dart`: Passage-level OSIS and USFM serialization
 - `reference_input_normalizer_test.dart`: Unicode transformations and UTF-16 source mapping
 - `reference_extractor_test.dart`: Prose extraction, replacement, and linkification
-- `canon_profile_test.dart`: Built-in/custom canon membership, ordering, and immutability
-- `versification_profile_test.dart`: Complete KJV bounds, ordinals, typed validation, and custom data
-- `bible_profile_test.dart`: Exact canon/versification pairings, stable lookup aliases, and custom registries
-- `profile_aware_parser_test.dart`: Opt-in parser, passage, factory, copy, and JSON validation
-- `reference_range_operations_test.dart`: Profile-aware containment, intersection, merge, iteration, and length
-- `cli_batch_test.dart`: Rich single/batch input, JSON Lines, formats, profile options, diagnostics, and exit codes
+- `cli_batch_test.dart`: Rich single/batch input, JSON Lines, formats, diagnostics, and exit codes
 
 ## Running Tests
 
@@ -60,13 +55,6 @@ dart test
 
 # Run specific test file
 dart test test/property/property_test.dart
-
-# Run canon, versification, composite-profile, parser-validation, and range tests
-dart test test/canon_profile_test.dart
-dart test test/versification_profile_test.dart
-dart test test/bible_profile_test.dart
-dart test test/profile_aware_parser_test.dart
-dart test test/reference_range_operations_test.dart
 
 # Run with coverage (if available)
 dart test --coverage=coverage
@@ -81,10 +69,6 @@ dart test --tags performance
 - Individual function/method testing
 - Error condition validation
 - Data structure immutability
-- Canon membership and canonical ordering
-- Real KJV chapter/verse boundaries and typed validation errors
-- Exact Bible-profile compatibility, registry lookup, and validation metadata
-- Inclusive range algebra against explicit versification profiles
 
 ### Integration Tests
 - Multi-component interaction

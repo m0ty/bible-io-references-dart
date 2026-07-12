@@ -30,18 +30,8 @@ Future<int> runCli(
     _printUsage(output);
     return _successExitCode;
   }
-  if (arguments.contains('--list-profiles')) {
-    _printProfiles(output);
-    return _successExitCode;
-  }
 
   BibleLanguageEnum? language;
-  BibleProfile? bibleProfile;
-  CanonProfile? canonProfile;
-  VersificationProfile? versificationProfile;
-  var profileOptionSeen = false;
-  var canonOptionSeen = false;
-  var versificationOptionSeen = false;
   var outputFormat = 'text';
   var batchFromStdin = false;
   String? inputPath;
@@ -69,64 +59,6 @@ Future<int> runCli(
           error.message?.toString() ?? error.toString(),
           errors,
         );
-      }
-    } else if (argument == '--profile') {
-      if (profileOptionSeen) {
-        return _usageError('--profile may be specified only once.', errors);
-      }
-      profileOptionSeen = true;
-      if (index + 1 >= arguments.length) {
-        return _usageError('Missing value for --profile.', errors);
-      }
-      try {
-        bibleProfile = _parseBibleProfile(arguments[++index]);
-      } on ArgumentError catch (error) {
-        return _usageError(error.message.toString(), errors);
-      }
-    } else if (argument.startsWith('--profile=')) {
-      if (profileOptionSeen) {
-        return _usageError('--profile may be specified only once.', errors);
-      }
-      profileOptionSeen = true;
-      try {
-        bibleProfile = _parseBibleProfile(argument.substring(10));
-      } on ArgumentError catch (error) {
-        return _usageError(error.message.toString(), errors);
-      }
-    } else if (argument == '--canon') {
-      canonOptionSeen = true;
-      if (index + 1 >= arguments.length) {
-        return _usageError('Missing value for --canon.', errors);
-      }
-      try {
-        canonProfile = _parseCanonProfile(arguments[++index]);
-      } on ArgumentError catch (error) {
-        return _usageError(error.message.toString(), errors);
-      }
-    } else if (argument.startsWith('--canon=')) {
-      canonOptionSeen = true;
-      try {
-        canonProfile = _parseCanonProfile(argument.substring(8));
-      } on ArgumentError catch (error) {
-        return _usageError(error.message.toString(), errors);
-      }
-    } else if (argument == '--versification') {
-      versificationOptionSeen = true;
-      if (index + 1 >= arguments.length) {
-        return _usageError('Missing value for --versification.', errors);
-      }
-      try {
-        versificationProfile = _parseVersificationProfile(arguments[++index]);
-      } on ArgumentError catch (error) {
-        return _usageError(error.message.toString(), errors);
-      }
-    } else if (argument.startsWith('--versification=')) {
-      versificationOptionSeen = true;
-      try {
-        versificationProfile =
-            _parseVersificationProfile(argument.substring(16));
-      } on ArgumentError catch (error) {
-        return _usageError(error.message.toString(), errors);
       }
     } else if (argument == '--format' || argument == '-f') {
       if (index + 1 >= arguments.length) {
@@ -166,12 +98,6 @@ Future<int> runCli(
       errors,
     );
   }
-  if (profileOptionSeen && (canonOptionSeen || versificationOptionSeen)) {
-    return _usageError(
-      '--profile cannot be combined with --canon or --versification.',
-      errors,
-    );
-  }
   if (batchFromStdin && inputPath != null) {
     return _usageError(
       '--batch and --input cannot be used together.',
@@ -187,20 +113,8 @@ Future<int> runCli(
     );
   }
   if (!isBatch && inputParts.isEmpty) {
-    return _usageError('A Bible passage is required.', errors);
+    return _usageError('A Bible reference is required.', errors);
   }
-
-  final ReferenceParser referenceParser;
-  try {
-    referenceParser = ReferenceParser(
-      profile: bibleProfile,
-      canonProfile: canonProfile,
-      versificationProfile: versificationProfile,
-    );
-  } on ArgumentError catch (error) {
-    return _usageError(error.message.toString(), errors);
-  }
-  final passageParser = PassageParser(referenceParser: referenceParser);
 
   if (!isBatch) {
     return _runSingle(
@@ -209,8 +123,6 @@ Future<int> runCli(
       outputFormat: outputFormat,
       output: output,
       errors: errors,
-      referenceParser: referenceParser,
-      passageParser: passageParser,
     );
   }
 
@@ -229,8 +141,6 @@ Future<int> runCli(
       outputFormat: outputFormat,
       output: output,
       errors: errors,
-      referenceParser: referenceParser,
-      passageParser: passageParser,
     );
   } on IOException catch (error) {
     final source = inputPath == null ? 'standard input' : '"$inputPath"';
@@ -251,16 +161,9 @@ int _runSingle(
   required String outputFormat,
   required StringSink output,
   required StringSink errors,
-  required ReferenceParser referenceParser,
-  required PassageParser passageParser,
 }) {
   try {
-    final parsed = _parseInput(
-      input,
-      language: language,
-      referenceParser: referenceParser,
-      passageParser: passageParser,
-    );
+    final parsed = _parseInput(input, language: language);
     if (outputFormat == 'json') {
       output.writeln(jsonEncode(_parsedToJson(parsed)));
     } else {
@@ -292,8 +195,6 @@ Future<int> _runBatch(
   required String outputFormat,
   required StringSink output,
   required StringSink errors,
-  required ReferenceParser referenceParser,
-  required PassageParser passageParser,
 }) async {
   var lineNumber = 0;
   var hadFailure = false;
@@ -306,12 +207,7 @@ Future<int> _runBatch(
     if (input.isEmpty) continue;
 
     try {
-      final parsed = _parseInput(
-        input,
-        language: language,
-        referenceParser: referenceParser,
-        passageParser: passageParser,
-      );
+      final parsed = _parseInput(input, language: language);
       if (outputFormat == 'json') {
         output.writeln(
           jsonEncode({
@@ -358,12 +254,10 @@ Future<int> _runBatch(
 Object _parseInput(
   String input, {
   required BibleLanguageEnum? language,
-  required ReferenceParser referenceParser,
-  required PassageParser passageParser,
 }) {
-  final reference = referenceParser.parseResult(input, language: language);
+  final reference = Reference.parseResult(input, language: language);
   if (reference.valueOrNull case final value?) return value;
-  return passageParser.parse(input, language: language);
+  return Passage.parse(input, language: language);
 }
 
 Map<String, Object?> _parsedToJson(Object parsed) => switch (parsed) {
@@ -426,50 +320,6 @@ String _ioErrorMessage(IOException error) {
   return error.toString();
 }
 
-BibleProfile? _parseBibleProfile(String value) {
-  final normalized = value.trim().toLowerCase();
-  if (normalized == 'none') return null;
-  final profile = BibleProfile.lookup(normalized);
-  if (profile != null) return profile;
-  throw ArgumentError.value(
-    value,
-    'profile',
-    'Unsupported Bible profile "$value". Use none, protestant-kjv, or kjv. '
-        'Catholic and Orthodox are profile families; use --canon for '
-        'canon-only validation.',
-  );
-}
-
-CanonProfile? _parseCanonProfile(String value) {
-  return switch (value.trim().toLowerCase()) {
-    'none' => null,
-    'protestant' => CanonProfile.protestant,
-    'catholic' => CanonProfile.catholic,
-    'orthodox' ||
-    'eastern-orthodox' ||
-    'eastern-orthodox-broad' =>
-      CanonProfile.broadEasternOrthodox,
-    _ => throw ArgumentError.value(
-        value,
-        'canon',
-        'Unsupported canon "$value". Use none, protestant, catholic, or '
-            'orthodox.',
-      ),
-  };
-}
-
-VersificationProfile? _parseVersificationProfile(String value) {
-  return switch (value.trim().toLowerCase()) {
-    'none' => null,
-    'kjv' || 'protestant' => VersificationProfile.kingJames,
-    _ => throw ArgumentError.value(
-        value,
-        'versification',
-        'Unsupported versification "$value". Use none or kjv.',
-      ),
-  };
-}
-
 int _usageError(String message, StringSink sink) {
   sink.writeln(message);
   _printUsage(sink);
@@ -479,48 +329,22 @@ int _usageError(String message, StringSink sink) {
 void _printUsage(StringSink sink) {
   sink.writeln('Usage:');
   sink.writeln(
-    '  bible_io_references [--language CODE] [--profile NAME] '
-    '[--canon NAME] '
-    '[--versification NAME] '
+    '  bible_io_references [--language CODE] '
     '[--format text|json|osis|usfm] '
     '"John 3:16"',
   );
   sink.writeln(
-    '  bible_io_references [--language CODE] [--profile NAME] '
-    '[--canon NAME] '
-    '[--versification NAME] '
+    '  bible_io_references [--language CODE] '
     '[--format text|json|osis|usfm] --batch',
   );
   sink.writeln(
-    '  bible_io_references [--language CODE] [--profile NAME] '
-    '[--canon NAME] '
-    '[--versification NAME] '
+    '  bible_io_references [--language CODE] '
     '[--format text|json|osis|usfm] '
     '--input FILE',
   );
   sink.writeln();
   sink.writeln('Batch input is UTF-8 with one passage per nonblank line.');
   sink.writeln('JSON batch output is JSON Lines, including per-line errors.');
-  sink.writeln('Bible profiles: none, protestant-kjv (alias: kjv).');
-  sink.writeln('Canons: none, protestant, catholic, orthodox.');
-  sink.writeln('Versifications: none, kjv (strict chapter/verse validation).');
   sink.writeln(
       'Exit codes: 0 success, 64 usage, 65 parse failure, 66 input error.');
-}
-
-void _printProfiles(StringSink sink) {
-  sink.writeln('Built-in Bible profiles:');
-  for (final profile in BibleProfile.values) {
-    final aliases = BibleProfile.builtIns.aliases.entries
-        .where((entry) => entry.value == profile.id)
-        .map((entry) => entry.key)
-        .join(', ');
-    final aliasSuffix = aliases.isEmpty ? '' : ' (aliases: $aliases)';
-    sink.writeln('  ${profile.id}$aliasSuffix - ${profile.displayName}');
-  }
-  sink.writeln();
-  sink.writeln(
-    'Catholic and Orthodox names identify families, not exact editions. '
-    'Use --canon for canon-only validation.',
-  );
 }

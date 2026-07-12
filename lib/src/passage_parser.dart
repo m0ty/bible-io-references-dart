@@ -29,37 +29,12 @@ sealed class Passage {
       _standardPassageParser.parseResult(input, language: language);
 
   /// Restores a passage produced by [toJson].
-  static Passage fromJson(
-    Map<String, Object?> json, {
-    BibleProfile? profile,
-    CanonProfile? canonProfile,
-    VersificationProfile? versificationProfile,
-  }) {
+  static Passage fromJson(Map<String, Object?> json) {
     return switch (json['type']) {
-      'book' => BookPassage.fromJson(
-          json,
-          profile: profile,
-          canonProfile: canonProfile,
-          versificationProfile: versificationProfile,
-        ),
-      'chapter' => ChapterPassage.fromJson(
-          json,
-          profile: profile,
-          canonProfile: canonProfile,
-          versificationProfile: versificationProfile,
-        ),
-      'verses' => VersePassage.fromJson(
-          json,
-          profile: profile,
-          canonProfile: canonProfile,
-          versificationProfile: versificationProfile,
-        ),
-      'sequence' => PassageSequence.fromJson(
-          json,
-          profile: profile,
-          canonProfile: canonProfile,
-          versificationProfile: versificationProfile,
-        ),
+      'book' => BookPassage.fromJson(json),
+      'chapter' => ChapterPassage.fromJson(json),
+      'verses' => VersePassage.fromJson(json),
+      'sequence' => PassageSequence.fromJson(json),
       final type => throw FormatException('unknown passage type: $type'),
     };
   }
@@ -80,25 +55,8 @@ final class BookPassage extends Passage {
 
   final BibleBookEnum book;
 
-  static BookPassage fromJson(
-    Map<String, Object?> json, {
-    BibleProfile? profile,
-    CanonProfile? canonProfile,
-    VersificationProfile? versificationProfile,
-  }) {
-    final book = _bookFromJson(json['book']);
-    final validation = _resolveValidationProfiles(
-      profile: profile,
-      canonProfile: canonProfile,
-      versificationProfile: versificationProfile,
-    );
-    final effectiveCanon = validation.canonProfile;
-    if (effectiveCanon != null) {
-      _validateBookInCanon(book, effectiveCanon);
-    }
-    validation.versificationProfile?.chapterCount(book);
-    return BookPassage(book);
-  }
+  static BookPassage fromJson(Map<String, Object?> json) =>
+      BookPassage(_bookFromJson(json['book']));
 
   @override
   String get displayString => book.fullName;
@@ -153,47 +111,22 @@ final class ChapterPassage extends Passage {
     required BibleBookEnum book,
     required int startChapter,
     int? endChapter,
-    BibleProfile? profile,
-    CanonProfile? canonProfile,
-    VersificationProfile? versificationProfile,
-  }) {
-    final validation = _resolveValidationProfiles(
-      profile: profile,
-      canonProfile: canonProfile,
-      versificationProfile: versificationProfile,
-    );
-    final effectiveCanon = validation.canonProfile;
-    if (effectiveCanon != null) {
-      _validateBookInCanon(book, effectiveCanon);
-    }
-    validation.versificationProfile?.verseCount(book, startChapter);
-    if (endChapter != null) {
-      validation.versificationProfile?.verseCount(book, endChapter);
-    }
-    return ChapterPassage(book, startChapter, endChapter);
-  }
+  }) =>
+      ChapterPassage(book, startChapter, endChapter);
 
   final BibleBookEnum book;
   final int startChapter;
   final int? endChapter;
 
-  static ChapterPassage fromJson(
-    Map<String, Object?> json, {
-    BibleProfile? profile,
-    CanonProfile? canonProfile,
-    VersificationProfile? versificationProfile,
-  }) {
+  static ChapterPassage fromJson(Map<String, Object?> json) {
     final end = json['endChapter'];
     if (end != null && end is! int) {
       throw const FormatException('"endChapter" must be an integer or null');
     }
-    return ChapterPassage.checked(
-      book: _bookFromJson(json['book']),
-      startChapter: _intFromJson(json, 'startChapter'),
-      endChapter: end as int?,
-      profile: profile,
-      canonProfile: canonProfile,
-      versificationProfile: versificationProfile,
+    return ChapterPassage(
+      _bookFromJson(json['book']),
+      _intFromJson(json, 'startChapter'),
+      end as int?,
     );
   }
 
@@ -245,24 +178,14 @@ final class VersePassage extends Passage {
 
   final List<Reference> selections;
 
-  static VersePassage fromJson(
-    Map<String, Object?> json, {
-    BibleProfile? profile,
-    CanonProfile? canonProfile,
-    VersificationProfile? versificationProfile,
-  }) {
+  static VersePassage fromJson(Map<String, Object?> json) {
     final values = json['selections'];
     if (values is! List) {
       throw const FormatException('"selections" must be an array');
     }
     return VersePassage([
       for (final value in values)
-        Reference.fromJson(
-          _passageJsonMap(value, 'selection'),
-          profile: profile,
-          canonProfile: canonProfile,
-          versificationProfile: versificationProfile,
-        ),
+        Reference.fromJson(_passageJsonMap(value, 'selection')),
     ]);
   }
 
@@ -319,24 +242,14 @@ final class PassageSequence extends Passage {
 
   final List<Passage> passages;
 
-  static PassageSequence fromJson(
-    Map<String, Object?> json, {
-    BibleProfile? profile,
-    CanonProfile? canonProfile,
-    VersificationProfile? versificationProfile,
-  }) {
+  static PassageSequence fromJson(Map<String, Object?> json) {
     final values = json['passages'];
     if (values is! List) {
       throw const FormatException('"passages" must be an array');
     }
     return PassageSequence([
       for (final value in values)
-        Passage.fromJson(
-          _passageJsonMap(value, 'passage'),
-          profile: profile,
-          canonProfile: canonProfile,
-          versificationProfile: versificationProfile,
-        ),
+        Passage.fromJson(_passageJsonMap(value, 'passage')),
     ]);
   }
 
@@ -426,9 +339,9 @@ final class PassageParser {
         passages.length == 1 ? passages.single : PassageSequence(passages);
     return _ParsedPassage(
       value,
-      referenceParser._metadata(
-        _normalizePassageWhitespace(normalizedInput),
-        matches,
+      ReferenceParseMetadata(
+        normalizedInput: _normalizePassageWhitespace(normalizedInput),
+        bookMatches: matches,
       ),
     );
   }
@@ -439,7 +352,6 @@ final class PassageParser {
   }) {
     final wholeBook = _tryResolveBook(input, language: language);
     if (wholeBook != null) {
-      referenceParser._validateBookProfile(wholeBook.match.selected.book);
       return _ParsedPassageSegment(
         BookPassage(wholeBook.match.selected.book),
         [wholeBook.match],
@@ -449,7 +361,6 @@ final class PassageParser {
     final split = _splitBookAndBody(input, language: language);
     final book = split.resolution.match.selected.book;
     final body = split.body;
-    referenceParser._validateBookProfile(book);
 
     final chapter = _passageChapterPattern.firstMatch(body);
     if (chapter != null) {
@@ -460,15 +371,11 @@ final class PassageParser {
             ? maxReferenceVerseNumber
             : maxReferenceChapterNumber,
       );
-      final Passage value;
-      if (singleChapterBooks.contains(book)) {
-        final verse = VerseRef.checked(book: book, chapter: 1, verse: number);
-        referenceParser._validateVerseProfile(verse);
-        value = VersePassage([verse]);
-      } else {
-        referenceParser._validateChapterProfile(book, number);
-        value = ChapterPassage(book, number);
-      }
+      final value = singleChapterBooks.contains(book)
+          ? VersePassage([
+              VerseRef.checked(book: book, chapter: 1, verse: number),
+            ])
+          : ChapterPassage(book, number);
       return _ParsedPassageSegment(value, [split.resolution.match]);
     }
 
@@ -497,19 +404,13 @@ final class PassageParser {
       }
       final Passage value;
       if (isSingleChapterBook) {
-        final startVerse =
-            VerseRef.checked(book: book, chapter: 1, verse: start);
-        final endVerse = VerseRef.checked(book: book, chapter: 1, verse: end);
-        referenceParser
-          .._validateVerseProfile(startVerse)
-          .._validateVerseProfile(endVerse);
         value = VersePassage([
-          VerseRangeRef(start: startVerse, end: endVerse),
+          VerseRangeRef.checked(
+            start: VerseRef.checked(book: book, chapter: 1, verse: start),
+            end: VerseRef.checked(book: book, chapter: 1, verse: end),
+          ),
         ]);
       } else {
-        referenceParser
-          .._validateChapterProfile(book, start)
-          .._validateChapterProfile(book, end);
         value = ChapterPassage(book, start, end);
       }
       return _ParsedPassageSegment(value, [split.resolution.match]);
@@ -594,7 +495,6 @@ final class PassageParser {
       chapter: startChapter,
       verse: startVerse,
     );
-    referenceParser._validateVerseProfile(start);
 
     final endVerseToken = match.group(4);
     if (endVerseToken == null) return start;
@@ -615,14 +515,13 @@ final class PassageParser {
         maximum: maxReferenceVerseNumber,
       ),
     );
-    referenceParser._validateVerseProfile(end);
-    if (referenceParser._compareVerseProfiles(start, end) >= 0) {
+    if (start.compareTo(end) >= 0) {
       throw ParseVerseRefError.typed(
         code: ReferenceParseErrorCode.sameBookRangeNotAscending,
         details: 'end reference must come after start reference',
       );
     }
-    return VerseRangeRef(start: start, end: end);
+    return VerseRangeRef.checked(start: start, end: end);
   }
 
   _BookResolution? _tryResolveBook(
