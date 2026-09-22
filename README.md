@@ -524,6 +524,27 @@ Contributions are welcome! Please:
 4. Ensure all tests pass
 5. Submit a pull request
 
+### Publishing a release
+
+Push a tag named `Release-x.x.x` whose version matches `pubspec.yaml`:
+
+```bash
+# After committing the release changes, including this workflow:
+git tag Release-1.2.0
+git push origin Release-1.2.0
+```
+
+The tag runs CI on Linux and Windows. Once both pass, the publish job uses
+[Dart's official publishing workflow](https://dart.dev/tools/pub/automated-publishing)
+to validate and publish the package to pub.dev. Branch pushes and pull requests
+run checks without publishing. Release tags with a mismatched version or an
+invalid `Release-x.x.x` format fail validation.
+
+In the package's pub.dev Admin settings, automated publishing must be enabled
+for `m0ty/bible-io-references-dart`, with tag pattern `Release-{{version}}` and
+publishing from `push` events enabled. Authentication uses GitHub OIDC, so no
+publishing secret needs to be stored in the repository.
+
 ## License
 
 GNU Affero General Public License v3.0 - see [LICENSE](LICENSE) for details.
