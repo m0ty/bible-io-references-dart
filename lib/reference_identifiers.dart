@@ -203,6 +203,9 @@ extension ReferenceMachineIdentifiers on Reference {
   ///
   /// Ranges repeat both full endpoints, for example
   /// `2Cor.6.14-2Cor.7.1`.
+  /// Verse subdivisions use OSIS sub-identifiers, such as `John.1.5!a`.
+  /// See section 15.3 of the OSIS 2.1.1 User's Manual:
+  /// https://www.crosswire.org/osis/OSIS%202.1.1%20User%20Manual%2006March2006.pdf
   String get osisIdentifier => switch (this) {
         VerseRef verse => _verseToOsis(verse),
         VerseRangeRef range =>
@@ -213,6 +216,7 @@ extension ReferenceMachineIdentifiers on Reference {
   ///
   /// Same-book ranges use the compact official form, such as
   /// `JHN 3:16-17` or `JHN 3:16-4:1`.
+  /// Verse subdivisions retain their lowercase suffix, such as `JHN 1:5a`.
   ///
   /// For a range spanning books, this package uses
   /// `JHN-ACT 21:25-1:2`. USFM defines the `BOOK-BOOK` prefix for book ranges,
@@ -289,13 +293,13 @@ String _compactUsfmSelection(Reference selection, VerseRef anchor) {
   return switch (selection) {
     VerseRef verse
         when verse.book == anchor.book && verse.chapter == anchor.chapter =>
-      '${verse.verse}',
+      verse.verseLabel,
     VerseRangeRef range
         when range.start.book == anchor.book &&
             range.end.book == anchor.book &&
             range.start.chapter == anchor.chapter &&
             range.end.chapter == anchor.chapter =>
-      '${range.start.verse}-${range.end.verse}',
+      '${range.start.verseLabel}-${range.end.verseLabel}',
     _ => selection.usfmIdentifier,
   };
 }
@@ -306,36 +310,37 @@ VerseRef _identifierReferenceStart(Reference reference) => switch (reference) {
     };
 
 String _verseToOsis(VerseRef verse) =>
-    '${verse.book.osisIdentifier}.${verse.chapter}.${verse.verse}';
+    '${verse.book.osisIdentifier}.${verse.chapter}.${verse.verse}'
+    '${verse.subdivision == null ? '' : '!${verse.subdivision}'}';
 
 String _verseToUsfm(VerseRef verse) =>
-    '${verse.book.usfmIdentifier} ${verse.chapter}:${verse.verse}';
+    '${verse.book.usfmIdentifier} ${verse.chapter}:${verse.verseLabel}';
 
 String _rangeToUsfm(VerseRangeRef range) {
   final start = range.start;
   final end = range.end;
   if (start.book != end.book) {
     return '${start.book.usfmIdentifier}-${end.book.usfmIdentifier} '
-        '${start.chapter}:${start.verse}-${end.chapter}:${end.verse}';
+        '${start.chapter}:${start.verseLabel}-${end.chapter}:${end.verseLabel}';
   }
   if (start.chapter == end.chapter) {
     return '${start.book.usfmIdentifier} '
-        '${start.chapter}:${start.verse}-${end.verse}';
+        '${start.chapter}:${start.verseLabel}-${end.verseLabel}';
   }
   return '${start.book.usfmIdentifier} '
-      '${start.chapter}:${start.verse}-${end.chapter}:${end.verse}';
+      '${start.chapter}:${start.verseLabel}-${end.chapter}:${end.verseLabel}';
 }
 
 final RegExp _osisReferencePattern = RegExp(
-  r'^([A-Za-z0-9]+)\.([0-9]+)\.([0-9]+)(?:-([A-Za-z0-9]+)\.([0-9]+)\.([0-9]+))?$',
+  r'^([A-Za-z0-9]+)\.([0-9]+)\.([0-9]+)(?:!([a-z]))?(?:-([A-Za-z0-9]+)\.([0-9]+)\.([0-9]+)(?:!([a-z]))?)?$',
 );
 
 final RegExp _usfmSameBookReferencePattern = RegExp(
-  r'^([A-Z1-4]{3}) ([0-9]+):([0-9]+)(?:-([0-9]+)(?::([0-9]+))?)?$',
+  r'^([A-Z1-4]{3}) ([0-9]+):([0-9]+)([a-z])?(?:-(?:([0-9]+):)?([0-9]+)([a-z])?)?$',
 );
 
 final RegExp _usfmCrossBookReferencePattern = RegExp(
-  r'^([A-Z1-4]{3})-([A-Z1-4]{3}) ([0-9]+):([0-9]+)-([0-9]+):([0-9]+)$',
+  r'^([A-Z1-4]{3})-([A-Z1-4]{3}) ([0-9]+):([0-9]+)([a-z])?-([0-9]+):([0-9]+)([a-z])?$',
 );
 
 /// Parses a verse or full-endpoint range OSIS [identifier].
@@ -344,6 +349,9 @@ final RegExp _usfmCrossBookReferencePattern = RegExp(
 /// `2Cor.6.14-2Cor.7.1`. The syntax and book identifiers are
 /// case-sensitive. Throws [FormatException] for malformed input, unknown book
 /// identifiers, invalid coordinates, or non-ascending ranges.
+/// A verse may have a single lowercase subdivision after `!`, as in
+/// `John.1.5!a` or `John.1.5!a-John.1.5!b`. Other OSIS sub-identifiers are
+/// outside this package's verse model and are rejected.
 Reference referenceFromOsisIdentifier(String identifier) {
   final match = _osisReferencePattern.firstMatch(identifier);
   if (match == null) {
@@ -360,16 +368,18 @@ Reference referenceFromOsisIdentifier(String identifier) {
     bookIdentifier: match[1]!,
     chapterToken: match[2]!,
     verseToken: match[3]!,
+    subdivision: match[4],
     bookLookup: bibleBookFromOsisIdentifier,
   );
-  if (match[4] == null) return start;
+  if (match[5] == null) return start;
 
   final end = _parseVerseEndpoint(
     identifier,
     formatName: 'OSIS',
-    bookIdentifier: match[4]!,
-    chapterToken: match[5]!,
-    verseToken: match[6]!,
+    bookIdentifier: match[5]!,
+    chapterToken: match[6]!,
+    verseToken: match[7]!,
+    subdivision: match[8],
     bookLookup: bibleBookFromOsisIdentifier,
   );
   return _checkedRange(start, end, identifier, formatName: 'OSIS');
@@ -382,6 +392,9 @@ Reference referenceFromOsisIdentifier(String identifier) {
 /// `JHN-ACT 21:25-1:2`, is also supported. Syntax and book identifiers are
 /// case-sensitive. Throws [FormatException] for malformed input, unknown book
 /// identifiers, invalid coordinates, or non-ascending ranges.
+/// A verse may have a single lowercase subdivision, as in `JHN 1:5a` or
+/// `JHN 1:5a-5b`. USFM reference syntax and verse bridge examples are documented
+/// at https://ubsicap.github.io/usfm/linking/index.html.
 Reference referenceFromUsfmIdentifier(String identifier) {
   final crossBookMatch = _usfmCrossBookReferencePattern.firstMatch(identifier);
   if (crossBookMatch != null) {
@@ -391,14 +404,16 @@ Reference referenceFromUsfmIdentifier(String identifier) {
       bookIdentifier: crossBookMatch[1]!,
       chapterToken: crossBookMatch[3]!,
       verseToken: crossBookMatch[4]!,
+      subdivision: crossBookMatch[5],
       bookLookup: bibleBookFromUsfmIdentifier,
     );
     final end = _parseVerseEndpoint(
       identifier,
       formatName: 'USFM',
       bookIdentifier: crossBookMatch[2]!,
-      chapterToken: crossBookMatch[5]!,
-      verseToken: crossBookMatch[6]!,
+      chapterToken: crossBookMatch[6]!,
+      verseToken: crossBookMatch[7]!,
+      subdivision: crossBookMatch[8],
       bookLookup: bibleBookFromUsfmIdentifier,
     );
     return _checkedRange(start, end, identifier, formatName: 'USFM');
@@ -420,17 +435,18 @@ Reference referenceFromUsfmIdentifier(String identifier) {
     bookIdentifier: match[1]!,
     chapterToken: match[2]!,
     verseToken: match[3]!,
+    subdivision: match[4],
     bookLookup: bibleBookFromUsfmIdentifier,
   );
-  if (match[4] == null) return start;
+  if (match[6] == null) return start;
 
-  final hasEndChapter = match[5] != null;
   final end = _parseVerseEndpoint(
     identifier,
     formatName: 'USFM',
     bookIdentifier: match[1]!,
-    chapterToken: hasEndChapter ? match[4]! : match[2]!,
-    verseToken: hasEndChapter ? match[5]! : match[4]!,
+    chapterToken: match[5] ?? match[2]!,
+    verseToken: match[6]!,
+    subdivision: match[7],
     bookLookup: bibleBookFromUsfmIdentifier,
   );
   return _checkedRange(start, end, identifier, formatName: 'USFM');
@@ -442,6 +458,7 @@ VerseRef _parseVerseEndpoint(
   required String bookIdentifier,
   required String chapterToken,
   required String verseToken,
+  String? subdivision,
   required BibleBookEnum Function(String) bookLookup,
 }) {
   try {
@@ -449,6 +466,7 @@ VerseRef _parseVerseEndpoint(
       book: bookLookup(bookIdentifier),
       chapter: int.parse(chapterToken),
       verse: int.parse(verseToken),
+      subdivision: subdivision,
     );
   } on ArgumentError catch (error) {
     throw FormatException(

@@ -292,6 +292,18 @@ final class ReferenceExtractor {
     final normalizedPassage = normalizedResult.valueOrNull;
     final normalizedMetadata = normalizedResult.metadataOrNull;
     if (normalizedPassage == null || normalizedMetadata == null) return false;
+    final lastPassage = normalizedPassage is PassageSequence
+        ? normalizedPassage.passages.last
+        : normalizedPassage;
+    if (_canNumericEndAt(searchText, end) &&
+        (_hasNumericContinuation(
+              searchText,
+              end,
+              allowSpacedPeriod: lastPassage is ChapterPassage,
+            ) ||
+            _hasCrossBookContinuation(searchText, end, language: language))) {
+      return false;
+    }
     if (!includeBareBooks &&
         (_containsBareBook(normalizedPassage) ||
             !_containsReferenceNumber(normalizedCandidate))) {
@@ -329,7 +341,23 @@ final class ReferenceExtractor {
     );
     return true;
   }
+
+  bool _hasCrossBookContinuation(
+    String source,
+    int end, {
+    required BibleLanguageEnum? language,
+  }) {
+    final maximumEnd = _clamp(end + maxLookAhead, 0, source.length);
+    final match = _crossBookContinuationPattern.firstMatch(
+      source.substring(end, maximumEnd),
+    );
+    if (match == null) return false;
+    return parser.tryParse(match.group(1)!, language: language) is BookPassage;
+  }
 }
+
+final _crossBookContinuationPattern =
+    RegExp(r'^\s*-\s*(.+?)\s*\d+\s*[:.]\s*\d');
 
 List<(int, int)> _numericAnchors(String source) {
   final anchors = <(int, int)>[];
@@ -386,8 +414,42 @@ bool _canEndAt(String source, int index) {
   return !_isEdgeDelimiter(source.codeUnitAt(index - 1));
 }
 
-bool _canNumericEndAt(String source, int index) =>
-    _canEndAt(source, index) && _isReferenceDigit(source.codeUnitAt(index - 1));
+bool _canNumericEndAt(String source, int index) {
+  if (!_canEndAt(source, index)) return false;
+  final last = source.codeUnitAt(index - 1);
+  final endsWithNumber = _isReferenceDigit(last);
+  final endsWithSubdivision = index >= 2 &&
+      _isAsciiLetter(last) &&
+      _isReferenceDigit(source.codeUnitAt(index - 2));
+  return endsWithNumber || endsWithSubdivision;
+}
+
+// Keep a malformed verse or range endpoint from being extracted as a shorter
+// chapter or verse reference, for example "John 1" from "John 1:5abc".
+bool _hasNumericContinuation(
+  String source,
+  int index, {
+  required bool allowSpacedPeriod,
+}) {
+  var next = index;
+  while (next < source.length && source.codeUnitAt(next) <= 0x20) {
+    next++;
+  }
+  if (next == source.length || !':.-'.contains(source[next])) return false;
+  final separator = source[next];
+  next++;
+  // A period followed by whitespace can end a sentence before another number.
+  if (separator == '.' &&
+      !allowSpacedPeriod &&
+      next < source.length &&
+      source.codeUnitAt(next) <= 0x20) {
+    return false;
+  }
+  while (next < source.length && source.codeUnitAt(next) <= 0x20) {
+    next++;
+  }
+  return next < source.length && _isReferenceDigit(source.codeUnitAt(next));
+}
 
 ReferenceInputSpan _trimBidiControls(
   String source,
@@ -469,9 +531,12 @@ const _commonAutoLanguageWords = {'am', 'at', 'is', 'so'};
 
 bool _isAsciiWord(int codeUnit) =>
     (codeUnit >= 0x30 && codeUnit <= 0x39) ||
-    (codeUnit >= 0x41 && codeUnit <= 0x5a) ||
-    (codeUnit >= 0x61 && codeUnit <= 0x7a) ||
+    _isAsciiLetter(codeUnit) ||
     codeUnit == 0x5f;
+
+bool _isAsciiLetter(int codeUnit) =>
+    (codeUnit >= 0x41 && codeUnit <= 0x5a) ||
+    (codeUnit >= 0x61 && codeUnit <= 0x7a);
 
 bool _isLowSurrogate(int codeUnit) => codeUnit >= 0xdc00 && codeUnit <= 0xdfff;
 

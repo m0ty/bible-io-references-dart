@@ -36,6 +36,11 @@ This document describes the comprehensive test suite for the `bible_io_reference
 
 ### Public API tests
 
+- `public_entrypoints_test.dart`: Shared types, parsing, and serialization across canonical, direct, and legacy imports
+- `verse_subdivision_test.dart`: Subdivision values, parsing, ordering, bounds, and passage round trips
+- `verse_label_test.dart`: Exact source label preservation, combined entries, JSON, and reference conversion
+- `subdivision_output_test.dart`: Subdivision formatting and OSIS/USFM round trips
+- `subdivision_extraction_test.dart`: Complete subdivision extraction, source spans, replacement, and malformed labels
 - `reference_api_test.dart`: Value semantics, JSON, typed results, and range dispatch
 - `reference_formatter_test.dart`: Localized formatting and language support metadata
 - `configurable_parser_test.dart`: Custom aliases, ambiguity policies, and detection metadata

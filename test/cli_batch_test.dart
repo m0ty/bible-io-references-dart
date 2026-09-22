@@ -214,6 +214,50 @@ void main() {
   });
 
   group('rich passage expressions', () {
+    test('renders subdivisions in batch text with complete labels', () async {
+      final output = StringBuffer();
+      final errors = StringBuffer();
+
+      final exitCode = await cli.runCli(
+        ['--batch'],
+        standardInput: _input('John 1:5A\nJohn 1:5a-5b\nJude 5b\n'),
+        standardOutput: output,
+        standardError: errors,
+      );
+
+      expect(exitCode, 0);
+      expect(output.toString(), 'John 1:5a\nJohn 1:5a-5b\nJude 1:5b\n');
+      expect(errors.toString(), isEmpty);
+    });
+
+    test('includes subdivision fields in verse and range JSON', () async {
+      final output = StringBuffer();
+
+      final exitCode = await cli.runCli(
+        ['--batch', '--format=json'],
+        standardInput: _input('John 1:5A\nJohn 1:5a-5b\n'),
+        standardOutput: output,
+        standardError: StringBuffer(),
+      );
+      final records = const LineSplitter()
+          .convert(output.toString())
+          .map((line) => jsonDecode(line) as Map<String, dynamic>)
+          .toList();
+
+      expect(exitCode, 0);
+      expect(records[0]['reference'], {
+        'type': 'verse',
+        'book': 'jo',
+        'chapter': 1,
+        'verse': 5,
+        'subdivision': 'a',
+      });
+      final range = records[1]['reference'] as Map<String, dynamic>;
+      expect(range['type'], 'range');
+      expect((range['start'] as Map<String, dynamic>)['subdivision'], 'a');
+      expect((range['end'] as Map<String, dynamic>)['subdivision'], 'b');
+    });
+
     test('renders whole books, chapters, lists, and sequences', () async {
       final output = StringBuffer();
 

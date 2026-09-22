@@ -9,6 +9,7 @@ A comprehensive Dart library for parsing Bible verse references into structured 
 
 - ✅ **Single verse parsing**: `John 3:16`, `jo 3:16` (abbreviations)
 - ✅ **Verse range parsing**: `John 3:16-17`, `John 3:16-4:1`, `John 3:16-Acts 1:2`
+- ✅ **Subdivided and combined verses**: `John 1:5a-5b` and exact source labels such as `3-4`
 - ✅ **Flexible formatting**: Supports `:`, `.` separators and various dash types (`-`, `–`, `—`)
 - ✅ **Multi-language support**: English plus 12 localized language packs
 - ✅ **Auto language detection**: Intelligently handles language precedence and collisions
@@ -64,6 +65,7 @@ void main() {
 - **`Reference`**: Sealed class representing either a verse or range
 - **`VerseRef`**: Single verse reference (book, chapter, verse)
 - **`VerseRangeRef`**: Verse range reference (start and end VerseRef)
+- **`VerseLabel`**: One source text entry's exact verse label, including combined verses
 - **`BibleBookEnum`**: Enumeration of all Bible books with names and abbreviations
 - **`BibleLanguageEnum`**: Supported languages for parsing
 - **`ReferenceParser`**: Reusable parser with aliases and ambiguity configuration
@@ -93,6 +95,56 @@ final result = Reference.parseResult(userInput);
 final legacyVerse = verseRefFromStr("John 3:16");
 final legacyRange = verseRangeRefFromStr("John 3:16-17");
 ```
+
+### Subdivided and Combined Verses
+
+Verse subdivisions use one letter `a`-`z`. Parsers accept uppercase letters and
+normalize them to lowercase. The existing integer `verse` field remains intact:
+
+```dart
+final verse = VerseRef.parse('John 1:5a');
+print(verse.verse);       // 5
+print(verse.subdivision); // a
+print(verse.verseLabel);  // 5a
+
+final range = Reference.parse('John 1:5a-5b');
+final passage = Passage.parse('John 1:5a,5b-6a; Jude 5a');
+print(range.displayString);   // John 1:5a-5b
+print(passage.displayString); // John 1:5a,5b-6a; Jude 1:5a
+```
+
+Subdivisions survive localized formatting, extraction, JSON, and machine
+identifiers. `John 1:5a` serializes to OSIS `John.1.5!a` and USFM `JHN 1:5a`.
+Plain verse JSON keeps its existing shape; subdivided verses add
+`"subdivision": "a"` while `"verse"` remains an integer. Checked constructors
+require a lowercase suffix. `copyWith` retains it unless a replacement is
+provided or `clearSubdivision: true` is set. Ordering is by book, chapter,
+verse, then suffix (`5 < 5a < 5b < 6`); this orders identifiers without defining
+which text portions they contain.
+
+A translation may store verses `3-4` as **one text entry**. Use `VerseLabel` to
+preserve that source label, then resolve its location when the book and chapter
+are known:
+
+```dart
+final label = VerseLabel.parse('3–4');
+print(label.source);        // 3–4 (exact original string)
+print(label.displayString); // 3-4 (normalized spelling)
+print(label.isCombined);    // true
+
+final reference = label.toReference(book: BibleBookEnum.john, chapter: 1);
+print(reference.displayString); // John 1:3-4
+
+final restored = VerseLabel.fromJson(label.toJson());
+print(restored.source); // 3–4
+```
+
+`VerseLabel` also accepts `5a` and `5a-5b`, and offers `tryParse` and
+`parseResult`. Its JSON stores the original string as `{"label": "3–4"}`;
+equality compares that source string, including spelling and whitespace. Keep
+the label alongside your text entry: converting it to a reference yields a
+normalized verse or range. `Reference.parse('John 1:3-4')` remains an ordinary
+range and does not infer that a translation combines the verses into one entry.
 
 ### Rich Passage Grammar
 
@@ -359,6 +411,9 @@ print(judgesRef.book); // BibleBookEnum.judges
   not apply edition-specific chapter or verse tables.
 - Canon membership is not enforced; book availability and numbering vary by
   Bible tradition and edition.
+- Subdivisions are limited to one Latin letter `a`-`z`. Multi-letter suffixes,
+  chapter subdivisions, and abbreviated endpoints such as `5a-b` are not
+  supported; write `5a-5b`. Source verse labels cover one chapter only.
 - Rich passage lists use commas and passage sequences use semicolons; prose
   words such as “and” are not grammar separators.
 - Unicode normalization targets reference syntax. It does not transliterate
@@ -428,6 +483,38 @@ dart test --tags performance
 ```
 
 ## Contributing
+
+### Code structure
+
+`lib/bible_io_references.dart` exports the public API; `lib/package.dart` keeps
+the compatibility import available. `lib/references.dart` owns the reference
+and passage library, with its implementation organized into parts under
+`lib/src/`:
+
+| File | Responsibility |
+| --- | --- |
+| `reference_models.dart` | Verse and range values, numeric limits, and JSON serialization |
+| `verse_label.dart` | Exact source labels for single, subdivided, or combined text entries |
+| `passage_models.dart` | Book, chapter, verse-selection, and sequence values |
+| `parse_result.dart` | Parse results, errors, ambiguity policy, and match metadata |
+| `reference_parser.dart` | Configurable verse and range parsing |
+| `passage_parser.dart` | Rich passage grammar built on the reference parser |
+| `book_alias_index.dart` | Alias indexing and default language priority |
+| `legacy_reference_parser.dart` | Original top-level parsers and collision reporting |
+| `reference_support.dart` | Shared validation, JSON decoding, and value comparison |
+
+These files remain parts of one library so sealed model types and private parser
+helpers can work together without changing existing imports. Import the public
+entrypoints rather than files under `lib/src/`. The legacy top-level parsers keep
+their original whitespace and book-matching rules while accepting verse
+subdivisions; changes to the configurable parser should not silently change
+those legacy rules.
+
+Formatting, machine identifiers, extraction, and input normalization each have
+their own module under `lib/`. Language data lives in `lib/languages/`, the CLI
+in `bin/`, and feature tests in `test/`.
+
+### Development workflow
 
 Contributions are welcome! Please:
 

@@ -1,165 +1,5 @@
 part of '../references.dart';
 
-/// Controls how a [ReferenceParser] resolves aliases that match several books.
-enum ReferenceAmbiguityPolicy {
-  /// Select the first candidate according to custom-alias and language priority.
-  preferLanguagePriority,
-
-  /// Fail with [ReferenceParseErrorCode.ambiguousBook] when distinct books match.
-  reject,
-}
-
-/// A single possible interpretation of a parsed book token.
-final class ReferenceBookCandidate {
-  const ReferenceBookCandidate({
-    required this.book,
-    required this.alias,
-    required this.language,
-    required this.isCustom,
-  });
-
-  /// The book represented by this candidate.
-  final BibleBookEnum book;
-
-  /// The registered alias that produced this candidate.
-  final String alias;
-
-  /// The alias language, or `null` for a language-neutral custom alias.
-  final BibleLanguageEnum? language;
-
-  /// Whether this candidate came from caller-provided aliases.
-  final bool isCustom;
-
-  Map<String, Object?> toJson() => {
-        'book': book.abbreviation,
-        'alias': alias,
-        'language': language?.code,
-        'custom': isCustom,
-      };
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is ReferenceBookCandidate &&
-          book == other.book &&
-          alias == other.alias &&
-          language == other.language &&
-          isCustom == other.isCustom;
-
-  @override
-  int get hashCode => Object.hash(book, alias, language, isCustom);
-}
-
-/// Match information for one explicit book token in the source text.
-final class ReferenceBookTokenMatch {
-  ReferenceBookTokenMatch({
-    required this.input,
-    required this.selected,
-    Iterable<ReferenceBookCandidate> alternatives = const [],
-  }) : alternatives = List.unmodifiable(alternatives);
-
-  /// The syntax-normalized book token, trimmed but otherwise unchanged.
-  final String input;
-
-  /// The candidate chosen by the parser.
-  final ReferenceBookCandidate selected;
-
-  /// Other candidates that matched the same normalized token.
-  final List<ReferenceBookCandidate> alternatives;
-
-  /// The selected language, or `null` for a language-neutral custom alias.
-  BibleLanguageEnum? get detectedLanguage => selected.language;
-
-  /// Whether the token could have selected a different book.
-  bool get isAmbiguous =>
-      alternatives.any((candidate) => candidate.book != selected.book);
-
-  Map<String, Object?> toJson() => {
-        'input': input,
-        'selected': selected.toJson(),
-        'alternatives': [
-          for (final candidate in alternatives) candidate.toJson(),
-        ],
-      };
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is ReferenceBookTokenMatch &&
-          input == other.input &&
-          selected == other.selected &&
-          _referenceListsEqual(alternatives, other.alternatives);
-
-  @override
-  int get hashCode =>
-      Object.hash(input, selected, Object.hashAll(alternatives));
-}
-
-/// Metadata captured while a reference is parsed successfully.
-final class ReferenceParseMetadata {
-  ReferenceParseMetadata({
-    required this.normalizedInput,
-    Iterable<ReferenceBookTokenMatch> bookMatches = const [],
-  }) : bookMatches = List.unmodifiable(bookMatches);
-
-  const ReferenceParseMetadata._({
-    required this.normalizedInput,
-    required this.bookMatches,
-  });
-
-  /// Empty metadata used by manually-created [ParseSuccess] values.
-  static const empty = ReferenceParseMetadata._(
-    normalizedInput: '',
-    bookMatches: <ReferenceBookTokenMatch>[],
-  );
-
-  /// The Unicode-syntax-normalized, trimmed, whitespace-normalized source.
-  final String normalizedInput;
-
-  /// Matches for each explicit book token in source order.
-  final List<ReferenceBookTokenMatch> bookMatches;
-
-  /// Every distinct language selected for explicit book tokens.
-  Set<BibleLanguageEnum> get detectedLanguages => Set.unmodifiable(
-        bookMatches
-            .map((match) => match.detectedLanguage)
-            .whereType<BibleLanguageEnum>(),
-      );
-
-  /// The one detected language, or `null` for mixed/no-language matches.
-  BibleLanguageEnum? get detectedLanguage {
-    final languages = detectedLanguages;
-    return languages.length == 1 ? languages.first : null;
-  }
-
-  /// All non-selected book candidates in source order.
-  List<ReferenceBookCandidate> get alternateMatches => List.unmodifiable(
-        bookMatches.expand((match) => match.alternatives),
-      );
-
-  /// Whether any explicit token matched more than one distinct book.
-  bool get hasAmbiguity => bookMatches.any((match) => match.isAmbiguous);
-
-  Map<String, Object?> toJson() => {
-        'normalizedInput': normalizedInput,
-        'detectedLanguage': detectedLanguage?.code,
-        'detectedLanguages': [
-          for (final language in detectedLanguages) language.code,
-        ],
-        'bookMatches': [for (final match in bookMatches) match.toJson()],
-      };
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is ReferenceParseMetadata &&
-          normalizedInput == other.normalizedInput &&
-          _referenceListsEqual(bookMatches, other.bookMatches);
-
-  @override
-  int get hashCode => Object.hash(normalizedInput, Object.hashAll(bookMatches));
-}
-
 /// A configurable, reusable Bible-reference parser.
 ///
 /// Custom aliases are language-neutral and intentionally outrank bundled
@@ -316,16 +156,16 @@ final class ReferenceParser {
       component: 'chapter',
       maximum: maxReferenceChapterNumber,
     );
-    final verse = _parseReferenceNumber(
+    final verse = _parseVerseToken(
       match.group(3)!,
       component: 'verse',
-      maximum: maxReferenceVerseNumber,
     );
     final resolution = _resolveBook(match.group(1)!, language: language);
     final value = VerseRef.checked(
       book: resolution.match.selected.book,
       chapter: chapter,
-      verse: verse,
+      verse: verse.verse,
+      subdivision: verse.subdivision,
     );
     return _ParsedReference(
       value,
@@ -353,10 +193,9 @@ final class ReferenceParser {
       component: 'start chapter',
       maximum: maxReferenceChapterNumber,
     );
-    final startVerse = _parseReferenceNumber(
+    final startVerse = _parseVerseToken(
       match.group(3)!,
       component: 'start verse',
-      maximum: maxReferenceVerseNumber,
     );
     final startResolution = _resolveBook(match.group(1)!, language: language);
     final matches = <ReferenceBookTokenMatch>[startResolution.match];
@@ -398,21 +237,22 @@ final class ReferenceParser {
         details: 'range end "$endExpression" does not match expected format',
       );
     }
-    final endVerse = _parseReferenceNumber(
+    final endVerse = _parseVerseToken(
       endVerseToken,
       component: 'end verse',
-      maximum: maxReferenceVerseNumber,
     );
 
     final start = VerseRef.checked(
       book: startResolution.match.selected.book,
       chapter: startChapter,
-      verse: startVerse,
+      verse: startVerse.verse,
+      subdivision: startVerse.subdivision,
     );
     final end = VerseRef.checked(
       book: endBook,
       chapter: endChapter,
-      verse: endVerse,
+      verse: endVerse.verse,
+      subdivision: endVerse.subdivision,
     );
     if (start.compareTo(end) >= 0) {
       final code = start.book == end.book
@@ -539,165 +379,10 @@ final class _ParsedReference<T> {
   final ReferenceParseMetadata metadata;
 }
 
-final class _BookResolution {
-  const _BookResolution(this.match);
-
-  final ReferenceBookTokenMatch match;
-}
-
-bool _referenceListsEqual<T>(List<T> left, List<T> right) {
-  if (identical(left, right)) return true;
-  if (left.length != right.length) return false;
-  for (var index = 0; index < left.length; index++) {
-    if (left[index] != right[index]) return false;
-  }
-  return true;
-}
-
-final class _ParserBookIndex {
-  _ParserBookIndex({
-    required Map<String, BibleBookEnum> aliases,
-    required Map<BibleLanguageEnum, Map<String, BibleBookEnum>>
-        aliasesByLanguage,
-  }) {
-    for (final book in BibleBookEnum.values) {
-      _register(
-        book.fullName,
-        book,
-        language: BibleLanguageEnum.english,
-      );
-      _register(
-        book.abbreviation,
-        book,
-        language: BibleLanguageEnum.english,
-      );
-    }
-
-    for (final language in BibleLanguageEnum.values) {
-      if (language == BibleLanguageEnum.auto ||
-          language == BibleLanguageEnum.english) {
-        continue;
-      }
-      final names = bookNamesByLanguage[language.code];
-      final abbreviations = bookAbbreviationsByLanguage[language.code];
-      if (names != null) {
-        _registerTable(names, language: language);
-      }
-      if (abbreviations != null) {
-        _registerTable(abbreviations, language: language);
-      }
-    }
-
-    for (final entry in aliases.entries) {
-      _register(entry.key, entry.value, isCustom: true);
-    }
-    for (final languageEntry in aliasesByLanguage.entries) {
-      for (final aliasEntry in languageEntry.value.entries) {
-        _register(
-          aliasEntry.key,
-          aliasEntry.value,
-          language: languageEntry.key,
-          isCustom: true,
-        );
-      }
-    }
-  }
-
-  final Map<String, List<ReferenceBookCandidate>> _candidatesByKey = {};
-
-  void _registerTable(
-    Map<BibleBookEnum, List<String>> table, {
-    required BibleLanguageEnum language,
-  }) {
-    for (final entry in table.entries) {
-      for (final alias in entry.value) {
-        _register(alias, entry.key, language: language);
-      }
-    }
-  }
-
-  void _register(
-    String alias,
-    BibleBookEnum book, {
-    BibleLanguageEnum? language,
-    bool isCustom = false,
-  }) {
-    final normalized = _normalizeParserAlias(alias);
-    if (normalized.isEmpty) {
-      if (isCustom) {
-        throw ArgumentError.value(alias, 'aliases', 'alias must not be empty');
-      }
-      return;
-    }
-    final candidate = ReferenceBookCandidate(
-      book: book,
-      alias: alias,
-      language: language,
-      isCustom: isCustom,
-    );
-    for (final key in _parserAliasKeys(normalized)) {
-      final candidates = _candidatesByKey.putIfAbsent(key, () => []);
-      final duplicate = candidates.any(
-        (existing) =>
-            existing.book == candidate.book &&
-            existing.language == candidate.language &&
-            existing.isCustom == candidate.isCustom,
-      );
-      if (!duplicate) candidates.add(candidate);
-    }
-  }
-
-  List<ReferenceBookCandidate> lookup(String input) {
-    final normalized = _normalizeParserAlias(input);
-    if (normalized.isEmpty) return const [];
-    for (final key in _parserAliasKeys(normalized)) {
-      final candidates = _candidatesByKey[key];
-      if (candidates != null && candidates.isNotEmpty) {
-        return List.of(candidates);
-      }
-    }
-    return const [];
-  }
-}
-
-List<BibleLanguageEnum> _buildLanguagePriority(
-  Iterable<BibleLanguageEnum> preferred,
-) {
-  final result = <BibleLanguageEnum>[];
-  void add(BibleLanguageEnum language) {
-    if (language != BibleLanguageEnum.auto && !result.contains(language)) {
-      result.add(language);
-    }
-  }
-
-  for (final language in preferred) {
-    add(language);
-  }
-  add(BibleLanguageEnum.english);
-  for (final code in _BookTermLookup.autoLanguagePrecedence) {
-    for (final language in BibleLanguageEnum.values) {
-      if (language.code == code) {
-        add(language);
-        break;
-      }
-    }
-  }
-  for (final language in supportedParsingLanguages) {
-    add(language);
-  }
-  return List.unmodifiable(result);
-}
-
-String _normalizeParserAlias(String value) =>
-    ReferenceInputNormalizer.normalize(
-      value,
-    ).trim().replaceAll(RegExp(r'\s+'), ' ').toLowerCase();
-
-Set<String> _parserAliasKeys(String normalized) {
-  final withoutPeriods = normalized.replaceAll('.', '');
-  return {
-    normalized,
-    withoutPeriods,
-    withoutPeriods.replaceAll(' ', ''),
-  };
-}
+final _flexibleVerseRangeRefPattern = RegExp(
+  r'^\s*(.+?)\s*(\d+)\s*[:.]\s*(\d+[a-zA-Z]?)\s*[-\u2013\u2014\u2015]\s*(.+?)\s*$',
+);
+final _sameChapterRangeEndPattern = RegExp(r'^(\d+[a-zA-Z]?)$');
+final _crossChapterRangeEndPattern = RegExp(r'^(\d+)\s*[:.]\s*(\d+[a-zA-Z]?)$');
+final _crossBookRangeEndPattern =
+    RegExp(r'^(.+?)\s*(\d+)\s*[:.]\s*(\d+[a-zA-Z]?)$');

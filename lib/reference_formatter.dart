@@ -14,10 +14,10 @@ enum ReferenceBookNameStyle {
 
 /// Formats parsed references with localized book names.
 ///
-/// The first registered name or abbreviation is the canonical display term for
-/// a language. Formatting falls back to English when [language] is `auto`, the
-/// language has no registered data, or a particular book is missing from that
-/// data.
+/// Full names use the first nonempty registered name. Abbreviations use the
+/// shortest nonempty registered term, with registration order breaking ties.
+/// Formatting falls back to English when [language] is `auto`, the language has
+/// no registered data, or a particular book is missing from that data.
 final class ReferenceFormatter {
   /// Creates a formatter with deterministic English defaults.
   const ReferenceFormatter({
@@ -83,7 +83,7 @@ final class ReferenceFormatter {
   }
 
   String _formatVerse(VerseRef reference) =>
-      '${formatBookName(reference.book)} ${reference.chapter}:${reference.verse}';
+      '${formatBookName(reference.book)} ${reference.chapter}:${reference.verseLabel}';
 
   String _formatRange(VerseRangeRef reference) {
     final start = reference.start;
@@ -95,9 +95,9 @@ final class ReferenceFormatter {
 
     final startText = _formatVerse(start);
     if (start.chapter == end.chapter) {
-      return '$startText-${end.verse}';
+      return '$startText-${end.verseLabel}';
     }
-    return '$startText-${end.chapter}:${end.verse}';
+    return '$startText-${end.chapter}:${end.verseLabel}';
   }
 
   String _formatChapterPassage(ChapterPassage passage) {
@@ -129,8 +129,8 @@ final class ReferenceFormatter {
 
   String _formatRelativeVerse(VerseRef verse, VerseRef anchor) {
     if (verse.book != anchor.book) return _formatVerse(verse);
-    if (verse.chapter == anchor.chapter) return '${verse.verse}';
-    return '${verse.chapter}:${verse.verse}';
+    if (verse.chapter == anchor.chapter) return verse.verseLabel;
+    return '${verse.chapter}:${verse.verseLabel}';
   }
 
   String _formatRelativeRange(VerseRangeRef range, VerseRef anchor) {
@@ -141,11 +141,11 @@ final class ReferenceFormatter {
     }
 
     final startText = start.chapter == anchor.chapter
-        ? '${start.verse}'
-        : '${start.chapter}:${start.verse}';
+        ? start.verseLabel
+        : '${start.chapter}:${start.verseLabel}';
     final endText = start.chapter == end.chapter
-        ? '${end.verse}'
-        : '${end.chapter}:${end.verse}';
+        ? end.verseLabel
+        : '${end.chapter}:${end.verseLabel}';
     return '$startText-$endText';
   }
 }

@@ -1,3 +1,20 @@
+## 1.2.0 - 2026-09-22
+
+### Added
+
+- Optional `VerseRef.subdivision` and `verseLabel` for labels such as `5a`,
+  including parsing, ordering, checked copies, and backward-compatible JSON
+- Subdivision-aware ranges, passage lists, single-chapter shorthand, localized
+  formatting, prose extraction, CLI output, and OSIS/USFM round trips
+- `VerseLabel` to retain one source entry's exact combined or subdivided label,
+  serialize it to JSON, and resolve it to a verse or range within a chapter
+- Public import compatibility and subdivision regression tests
+
+### Changed
+
+- Organized the reference library into focused parts for models, parsers,
+  metadata, alias lookup, legacy parsing, and shared validation
+
 ## 1.1.0 - 2026-07-12
 
 ### Added
